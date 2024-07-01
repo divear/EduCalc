@@ -12,3 +12,4 @@ chrono = { version = "0.4.19", features = ["serde"] }
 rand = "0.8.5"
 tokio = { version = "1", features = ["full"] }
 dotenvy = "0.15.7"  
+headless_chrome = {git = "https://github.com/rust-headless-chrome/rust-headless-chrome", features = ["fetch"]}
