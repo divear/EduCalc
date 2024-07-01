@@ -14,9 +14,8 @@ PASSWORD=your_password
 
 2. Run it with:
 
-```bash
+```sh
 cargo run
-
 
 ```
 
