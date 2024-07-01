@@ -14,9 +14,8 @@ PASSWORD=your_password
 
 2. Run it with:
 
-```sh
+```rust
 cargo run
-
 ```
 
 ## How does this work?
