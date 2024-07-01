@@ -4,11 +4,19 @@ For some reason edupage doesn't have this build in, so I made this small script 
 
 # How do I use this?
 
-Clone this repo, create a `.env` file in root directory and add:
+1. Clone this repo, create a `.env` file in root directory and add:
 
 ```env
 USERNAME=your_username
 PASSWORD=your_password
+
+```
+
+2. Run it with:
+
+```bash
+cargo run
+
 
 ```
 
