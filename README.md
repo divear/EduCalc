@@ -14,7 +14,7 @@ PASSWORD=your_password
 
 2. Run it with:
 
-```rust
+```
 cargo run
 ```
 
