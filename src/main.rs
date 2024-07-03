@@ -20,9 +20,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     tab.type_str(&username)?;
     tab.wait_for_element("input#home_Login_2e2")?.click()?;
     tab.type_str(&password)?.press_key("Enter")?;
-    let jpeg_data =
-        tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Jpeg, None, None, true)?;
-    std::fs::write("screenshot2.jpeg", jpeg_data)?;
 
     println!("znamky page");
     tab.navigate_to("https://sspbrno.edupage.org/znamky")?
@@ -73,10 +70,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
     // let curr_prumer = tab.wait_for_element(".expandImg")?.get_inner_text()?;
     // println!("{}", curr_prumer);
-
-    let jpeg_data =
-        tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Jpeg, None, None, true)?;
-    std::fs::write("screenshot3.jpeg", jpeg_data)?;
 
     Ok(())
 }
