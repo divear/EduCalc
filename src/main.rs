@@ -1,10 +1,11 @@
+use colored::Colorize;
 use dotenvy::dotenv;
-use std::error::Error;
 // mod prev;
-use headless_chrome::protocol::cdp::Page;
+// use headless_chrome::protocol::cdp::Page;
 use headless_chrome::Browser;
-use std::env;
-use std::time::Duration;
+use std::{env, error::Error, thread, time::Duration};
+
+const WAIT_LIMIT: u64 = 15;
 
 fn process_two(znamka: &str) {
     println!("{} passed into process_two", znamka)
@@ -30,11 +31,16 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
     println!("znamky page");
     tab.navigate_to("https://sspbrno.edupage.org/znamky")?
-        .wait_for_element("#edubarStartButton")?;
-    // tab.wait_for_element(".fixedCell")?; //delete if this works
+        .wait_for_element("#edubarStartButton")?; //without this it doesn't work; investigate;
+                                                  // tab.wait_for_element(".fixedCell")?; //delete if this works
+                                                  //
+                                                  // for i in 1..WAIT_LIMIT {
+                                                  //     print!("{} ", i);
+                                                  //     thread::sleep(Duration::from_secs(WAIT_LIMIT));
+                                                  // }
     println!("start");
     let inner_text_content = tab
-        .wait_for_element_with_custom_timeout(".znZnamka", Duration::from_secs(15))?
+        .wait_for_element_with_custom_timeout(".znZnamka", Duration::from_secs(WAIT_LIMIT))?
         .get_inner_text()?;
     println!("{}", inner_text_content);
     println!("end");
@@ -57,16 +63,12 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                     Ok(znamka_int) => {
                         println!("Parsed number: {:?}", znamka_int);
                         znamky_all.push(znamka_int);
-                        // You can use `znamka_int` here.
                     }
                     Err(_) => {
-                        println!("Failed to parse '{}' as a number", new_znamka);
-                        // Handle the case where the string is not a valid number.
+                        println!("'{}' není v normálním formátu", new_znamka.yellow());
 
-                        // also check if it is just "+", or "-", but other that that it kinda
-                        // workds
                         match new_znamka.len() {
-                            1 => println!("+/-/o se nevztahuje na prumer"),
+                            1 => println!("+/-/o/S se nevztahuje na prumer"),
                             2 => process_two(&new_znamka),
                             3.. => process_longer(&new_znamka),
                             _ => println!("it is 2"),

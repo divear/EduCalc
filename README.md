@@ -1,8 +1,8 @@
 # EduPage grade average calculator
 
-For some reason edupage doesn't have this build in, so I made this small script to calculate the average if you received a new grade.
+For some reason edupage doesn't have this build in, so I made this small script to calculate what would happen to your grade average if you received a new grade.
 
-# How do I use this?
+## How do I use this?
 
 1. Clone this repo, create a `.env` file in root directory and add:
 
@@ -21,3 +21,7 @@ cargo run
 ## How does this work?
 
 It just scrapes the site and calculates it.
+
+## Known issues
+
+- Edupage is unreliable and sometimes it simply doesn't scrape the results
