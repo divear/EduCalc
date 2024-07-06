@@ -6,6 +6,13 @@ use headless_chrome::Browser;
 use std::env;
 use std::time::Duration;
 
+fn process_two(znamka: &str) {
+    println!("{} passed into process_two", znamka)
+}
+fn process_longer(znamka: &str) {
+    println!("{} passed into process_longer", znamka)
+}
+
 pub fn main() -> Result<(), Box<dyn Error>> {
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
@@ -55,6 +62,15 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                     Err(_) => {
                         println!("Failed to parse '{}' as a number", new_znamka);
                         // Handle the case where the string is not a valid number.
+
+                        // also check if it is just "+", or "-", but other that that it kinda
+                        // workds
+                        match new_znamka.len() {
+                            1 => println!("+/-/o se nevztahuje na prumer"),
+                            2 => process_two(&new_znamka),
+                            3.. => process_longer(&new_znamka),
+                            _ => println!("it is 2"),
+                        }
                     }
                 }
             }
