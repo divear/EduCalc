@@ -3,15 +3,28 @@ use dotenvy::dotenv;
 // mod prev;
 // use headless_chrome::protocol::cdp::Page;
 use headless_chrome::Browser;
-use std::{env, error::Error, thread, time::Duration};
+use std::{env, error::Error, /* thread,*/ time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
 
-fn process_two(znamka: &str) {
-    println!("{} passed into process_two", znamka)
+fn process_two(znamka: &str) -> Option<char> {
+    // 2- etc.
+    println!("{} passed into process_two", znamka);
+    znamka.chars().nth(0)
 }
-fn process_longer(znamka: &str) {
-    println!("{} passed into process_longer", znamka)
+fn process_longer(znamka: &str) -> Option<char> {
+    // 9 / 15 = 60% → 3 etc.
+    println!("{} passed into process_longer", znamka);
+
+    //test for correct type (correct usize)
+    znamka.chars().nth_back(0)
+}
+fn process_percent(znamka: &str) -> Option<char> {
+    // 100% etc.
+    println!("{} passed into process_percent", znamka);
+    let znamka_float: f32 = znamka.replace("%", "").parse().expect("not a float");
+    println!("{}", znamka_float);
+    Some(' ')
 }
 
 pub fn main() -> Result<(), Box<dyn Error>> {
@@ -31,13 +44,11 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
     println!("znamky page");
     tab.navigate_to("https://sspbrno.edupage.org/znamky")?
-        .wait_for_element("#edubarStartButton")?; //without this it doesn't work; investigate;
-                                                  // tab.wait_for_element(".fixedCell")?; //delete if this works
-                                                  //
-                                                  // for i in 1..WAIT_LIMIT {
-                                                  //     print!("{} ", i);
-                                                  //     thread::sleep(Duration::from_secs(WAIT_LIMIT));
-                                                  // }
+        .wait_for_element_with_custom_timeout(
+            "#edubarStartButton",
+            Duration::from_secs(WAIT_LIMIT),
+        )?; //without this it doesn't work; investigate;
+
     println!("start");
     let inner_text_content = tab
         .wait_for_element_with_custom_timeout(".znZnamka", Duration::from_secs(WAIT_LIMIT))?
@@ -53,8 +64,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     for i in &containing_element {
         println!("{:?}", i);
         let new_znamka = i.get_inner_text();
-        // println!("new znamka: {:?}", new_znamka);
-        // let znamka_int: usize = new_znamka?.parse()?;
 
         match new_znamka {
             Ok(new_znamka) => {
@@ -66,12 +75,28 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                     }
                     Err(_) => {
                         println!("'{}' není v normálním formátu", new_znamka.yellow());
-
-                        match new_znamka.len() {
-                            1 => println!("+/-/o/S se nevztahuje na prumer"),
-                            2 => process_two(&new_znamka),
-                            3.. => process_longer(&new_znamka),
-                            _ => println!("it is 2"),
+                        if new_znamka.chars().nth_back(0) == Some('%') {
+                            process_percent(&new_znamka);
+                        } else {
+                            let extracted_znamka = match new_znamka.len() {
+                                1 => {
+                                    println!("+/-/o/S se nevztahuje na prumer");
+                                    Some(' ')
+                                }
+                                2 => process_two(&new_znamka),
+                                3.. => process_longer(&new_znamka),
+                                _ => {
+                                    println!("the length of grade is 0 or negative!");
+                                    Some(' ')
+                                }
+                            };
+                            if extracted_znamka == Some(' ') {
+                                println!("this grade was not counted into the average")
+                            } else {
+                                let parsed_znamka: usize =
+                                    extracted_znamka.unwrap_or(' ').to_string().parse()?;
+                                znamky_all.push(parsed_znamka)
+                            }
                         }
                     }
                 }
