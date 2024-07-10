@@ -7,24 +7,29 @@ use std::{env, error::Error, /* thread,*/ time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
 
-fn process_two(znamka: &str) -> Option<char> {
+fn process_two(znamka: &str) -> Option<f32> {
     // 2- etc.
     println!("{} passed into process_two", znamka);
-    znamka.chars().nth(0)
+    let returned = znamka.chars().nth(0).unwrap().to_string();
+    let returned_num: f32 = returned.parse().expect("a proper float");
+    println!("{:?}", returned_num);
+    Some(returned_num + 0.25)
 }
-fn process_longer(znamka: &str) -> Option<char> {
+fn process_longer(znamka: &str) -> Option<f32> {
     // 9 / 15 = 60% → 3 etc.
     println!("{} passed into process_longer", znamka);
 
-    //test for correct type (correct usize)
-    znamka.chars().nth_back(0)
+    let returned = znamka.chars().nth_back(0).unwrap().to_string();
+    let returned_num: f32 = returned.parse().expect("a proper float");
+    println!("{:?}", returned_num);
+    Some(returned_num)
 }
-fn process_percent(znamka: &str) -> Option<char> {
+fn process_percent(znamka: &str) -> Option<f32> {
     // 100% etc.
     println!("{} passed into process_percent", znamka);
-    let znamka_float: f32 = znamka.replace("%", "").parse().expect("not a float");
-    println!("{}", znamka_float);
-    Some(' ')
+    let znamka: f32 = znamka.replace("%", "").parse().expect("a proper float");
+    println!("{}", znamka);
+    Some(znamka)
 }
 
 pub fn main() -> Result<(), Box<dyn Error>> {
@@ -59,7 +64,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     //     .find_elements("znznamka")?
     //     .capture_screenshot(page::capturescreenshotformatoption::png)?;
     // std::fs::write("button.jpeg", test_button)?;
-    let mut znamky_all: Vec<usize> = Vec::new();
+    let mut znamky_all: Vec<f32> = Vec::new();
     let containing_element = tab.find_elements(".znZnamka")?;
     for i in &containing_element {
         println!("{:?}", i);
@@ -68,9 +73,9 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         match new_znamka {
             Ok(new_znamka) => {
                 println!("new znamka: {:?}", new_znamka);
-                match new_znamka.parse::<usize>() {
+                match new_znamka.parse::<f32>() {
                     Ok(znamka_int) => {
-                        println!("Parsed number: {:?}", znamka_int);
+                        println!("Parsed number: {}", znamka_int.to_string().green());
                         znamky_all.push(znamka_int);
                     }
                     Err(_) => {
@@ -81,21 +86,25 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                             let extracted_znamka = match new_znamka.len() {
                                 1 => {
                                     println!("+/-/o/S se nevztahuje na prumer");
-                                    Some(' ')
+                                    None
                                 }
                                 2 => process_two(&new_znamka),
                                 3.. => process_longer(&new_znamka),
                                 _ => {
                                     println!("the length of grade is 0 or negative!");
-                                    Some(' ')
+                                    None
                                 }
                             };
-                            if extracted_znamka == Some(' ') {
+                            if extracted_znamka.is_none() {
                                 println!("this grade was not counted into the average")
                             } else {
-                                let parsed_znamka: usize =
-                                    extracted_znamka.unwrap_or(' ').to_string().parse()?;
-                                znamky_all.push(parsed_znamka)
+                                // let parsed_znamka: usize =
+                                //     extracted_znamka.unwrap_or(' ').to_string().parse()?;
+                                if extracted_znamka.is_some() {
+                                    znamky_all.push(
+                                        extracted_znamka.expect("adding a working grade failed"),
+                                    )
+                                }
                             }
                         }
                     }
