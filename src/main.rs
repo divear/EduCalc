@@ -65,11 +65,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         };
     }
 
-    // match is_loaded {
-    //     Ok(is_loaded) => println!("works, {:?} is loaded", is_loaded),
-    //     Err(_) => {
-    //         println!("failed111")
-    //     }
     // }
     let jpeg_data =
         tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Png, None, None, true)?;
@@ -82,10 +77,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         .get_inner_text()?;
     println!("{}", inner_text_content);
     println!("end");
-    // let test_button = tab
-    //     .find_elements("znznamka")?
-    //     .capture_screenshot(page::capturescreenshotformatoption::png)?;
-    // std::fs::write("button.jpeg", test_button)?;
     let mut znamky_all: Vec<f32> = Vec::new();
     let containing_element = tab.find_elements(".znZnamka")?;
     for i in &containing_element {
@@ -124,8 +115,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                             if extracted_znamka.is_none() {
                                 println!("this grade was not counted into the average")
                             } else {
-                                // let parsed_znamka: usize =
-                                //     extracted_znamka.unwrap_or(' ').to_string().parse()?;
                                 znamky_all
                                     .push(extracted_znamka.expect("adding a working grade failed"));
                                 println!("{:?}", extracted_znamka);
