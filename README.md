@@ -4,7 +4,7 @@ For some reason edupage doesn't have this build in, so I made this small script 
 
 ## How do I use this?
 
-1. Clone this repo, create a `.env` file in root directory and add:
+1. Clone this repo, create a `.env` file in root directory and add your EduPage credentials:
 
 ```env
 USERNAME=your_username

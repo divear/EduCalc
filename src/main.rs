@@ -36,7 +36,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
 
-    dotenv().expect(".env file not found");
+    dotenv().expect(".env file not found - follow instructions in the README");
     let username = env::var("USERNAME").expect("USERNAME environment variable not set");
     let password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
 
@@ -49,10 +49,28 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
     println!("znamky page");
     tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
-    tab.wait_for_element_with_custom_timeout(
-        "#edubarStartButton",
-        Duration::from_secs(WAIT_LIMIT),
-    )?;
+
+    loop {
+        match tab.wait_for_element_with_custom_timeout(
+            "#edubarStartButton",
+            Duration::from_secs(WAIT_LIMIT),
+        ) {
+            Ok(d) => {
+                Some(d);
+                break;
+            }
+            Err(_) => {
+                println!("could not find, trying again");
+            }
+        };
+    }
+
+    // match is_loaded {
+    //     Ok(is_loaded) => println!("works, {:?} is loaded", is_loaded),
+    //     Err(_) => {
+    //         println!("failed111")
+    //     }
+    // }
     let jpeg_data =
         tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Png, None, None, true)?;
     // Save the screenshot to disc
@@ -87,8 +105,8 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                         if new_znamka.chars().nth_back(0) == Some('%') {
                             let extracted_znamka = process_percent(&new_znamka);
                             if extracted_znamka.is_some() {
-                                // znamky_all
-                                //     .push(extracted_znamka.expect("adding a working grade failed"))
+                                znamky_all
+                                    .push(extracted_znamka.expect("adding a working grade failed"))
                             }
                         } else {
                             let extracted_znamka = match new_znamka.len() {
