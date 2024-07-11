@@ -1,9 +1,9 @@
 use colored::Colorize;
 use dotenvy::dotenv;
 // mod prev;
-// use headless_chrome::protocol::cdp::Page;
+use headless_chrome::protocol::cdp::Page;
 use headless_chrome::Browser;
-use std::{env, error::Error, /* thread,*/ time::Duration};
+use std::{env, error::Error, fs, /* thread,*/ time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
 
@@ -48,11 +48,15 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     tab.type_str(&password)?.press_key("Enter")?;
 
     println!("znamky page");
-    tab.navigate_to("https://sspbrno.edupage.org/znamky")?
-        .wait_for_element_with_custom_timeout(
-            "#edubarStartButton",
-            Duration::from_secs(WAIT_LIMIT),
-        )?; //without this it doesn't work; investigate;
+    tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
+    tab.wait_for_element_with_custom_timeout(
+        "#edubarStartButton",
+        Duration::from_secs(WAIT_LIMIT),
+    )?;
+    let jpeg_data =
+        tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Png, None, None, true)?;
+    // Save the screenshot to disc
+    fs::write("./assets/screenshot.png", jpeg_data)?;
 
     println!("start");
     let inner_text_content = tab
@@ -81,7 +85,11 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                     Err(_) => {
                         println!("'{}' není v normálním formátu", new_znamka.yellow());
                         if new_znamka.chars().nth_back(0) == Some('%') {
-                            process_percent(&new_znamka);
+                            let extracted_znamka = process_percent(&new_znamka);
+                            if extracted_znamka.is_some() {
+                                // znamky_all
+                                //     .push(extracted_znamka.expect("adding a working grade failed"))
+                            }
                         } else {
                             let extracted_znamka = match new_znamka.len() {
                                 1 => {
@@ -100,11 +108,9 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                             } else {
                                 // let parsed_znamka: usize =
                                 //     extracted_znamka.unwrap_or(' ').to_string().parse()?;
-                                if extracted_znamka.is_some() {
-                                    znamky_all.push(
-                                        extracted_znamka.expect("adding a working grade failed"),
-                                    )
-                                }
+                                znamky_all
+                                    .push(extracted_znamka.expect("adding a working grade failed"));
+                                println!("{:?}", extracted_znamka);
                             }
                         }
                     }
@@ -115,13 +121,17 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 // Handle the error case where `get_inner_text` failed.
             }
         }
-        // znamky_all.push(znamka_int);
     }
-    // let inner_divs = containing_element.find_elements(".znznamka")?;
     println!("{:?}", znamky_all);
-
-    // let curr_prumer = tab.wait_for_element(".expandImg")?.get_inner_text()?;
-    // println!("{}", curr_prumer);
+    let grades_as_string = znamky_all
+        .iter()
+        .map(|n| n.to_string())
+        .collect::<Vec<String>>()
+        .join(", ");
+    fs::write("./assets/last_grades.txt", grades_as_string).expect("unable to write in file"); // in case it fails next time
+    let global_average: f32 =
+        &znamky_all.clone().into_iter().sum::<f32>() / znamky_all.len() as f32;
+    println!("global average grade: {:?}", global_average);
 
     Ok(())
 }

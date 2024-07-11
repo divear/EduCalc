@@ -1,5 +1,5 @@
 [package]
-name = "rust_edu_fetch"
+name = "edupage_grade_calculator"
 version = "0.1.0"
 edition = "2021"
 

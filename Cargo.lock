@@ -541,6 +541,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "edupage_grade_calculator"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "colored",
+ "dotenvy",
+ "headless_chrome",
+ "rand",
+ "reqwest",
+ "scraper",
+ "tokio",
+]
+
+[[package]]
 name = "ego-tree"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1543,20 +1557,6 @@ dependencies = [
  "spin",
  "untrusted",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "rust_edu_fetch"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "colored",
- "dotenvy",
- "headless_chrome",
- "rand",
- "reqwest",
- "scraper",
- "tokio",
 ]
 
 [[package]]
