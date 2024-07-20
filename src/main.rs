@@ -48,9 +48,10 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     tab.type_str(&password)?.press_key("Enter")?;
 
     println!("znamky page");
-    tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
 
     loop {
+        tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
+        println!("navigated to grades page");
         match tab.wait_for_element_with_custom_timeout(
             "#edubarStartButton",
             Duration::from_secs(WAIT_LIMIT),
@@ -97,7 +98,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                             let extracted_znamka = process_percent(&new_znamka);
                             if extracted_znamka.is_some() {
                                 znamky_all
-                                    .push(extracted_znamka.expect("adding a working grade failed"))
+                                    .push(extracted_znamka.expect("adding a woirking grade failed"))
                             }
                         } else {
                             let extracted_znamka = match new_znamka.len() {
