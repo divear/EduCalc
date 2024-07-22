@@ -7,6 +7,7 @@ use std::{env, error::Error, fs, /* thread,*/ time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
 
+// the individual processing functions
 fn process_two(znamka: &str) -> Option<f32> {
     // 2- etc.
     println!("{} passed into process_two", znamka);
@@ -40,16 +41,16 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     let username = env::var("USERNAME").expect("USERNAME environment variable not set");
     let password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
 
-    println!("signing in");
-    tab.navigate_to("https://sspbrno.edupage.org/login/edubarLogin.php")?;
-    tab.wait_for_element("input#home_Login_2e1")?.click()?;
-    tab.type_str(&username)?;
-    tab.wait_for_element("input#home_Login_2e2")?.click()?;
-    tab.type_str(&password)?.press_key("Enter")?;
-
-    println!("znamky page");
-
     loop {
+        println!("signing in");
+        tab.navigate_to("https://sspbrno.edupage.org/login/edubarLogin.php")?;
+        tab.wait_for_element("input#home_Login_2e1")?.click()?;
+        tab.type_str(&username)?;
+        tab.wait_for_element("input#home_Login_2e2")?.click()?;
+        tab.type_str(&password)?.press_key("Enter")?;
+
+        println!("znamky page");
+
         tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
         println!("navigated to grades page");
         match tab.wait_for_element_with_custom_timeout(
@@ -66,22 +67,42 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         };
     }
 
-    // }
     let jpeg_data =
         tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Png, None, None, true)?;
     // Save the screenshot to disc
     fs::write("./assets/screenshot.png", jpeg_data)?;
 
     println!("start");
-    let inner_text_content = tab
+    let prvni_znamka = tab
         .wait_for_element_with_custom_timeout(".znZnamka", Duration::from_secs(WAIT_LIMIT))?
         .get_inner_text()?;
-    println!("{}", inner_text_content);
+    let _prvni_predmet = tab
+        .wait_for_element_with_custom_timeout(
+            ".app-list-item-main div b",
+            Duration::from_secs(WAIT_LIMIT),
+        )?
+        .get_inner_text()?;
+    println!("{}", prvni_znamka);
+    println!("{}", _prvni_predmet);
     println!("end");
     let mut znamky_all: Vec<f32> = Vec::new();
-    let containing_element = tab.find_elements(".znZnamka")?;
-    for i in &containing_element {
+    let mut predmety_all: Vec<String> = Vec::new();
+    let znamky_elements = tab.find_elements(".znZnamka")?;
+    let predmety_elements = tab.find_elements(".app-list-item-main div b")?;
+    for i in &predmety_elements {
         println!("{:?}", i);
+        let new_znamka = i.get_inner_text();
+        println!("{:?}", new_znamka);
+        if new_znamka.is_ok() {
+            predmety_all.push(new_znamka.expect("nazev predmetu"));
+            println!("predmet saved")
+        } else {
+            println!("fail")
+        }
+    }
+    println!("{:?}", predmety_all);
+    for i in &znamky_elements {
+        // println!("{:?}", i);
         let new_znamka = i.get_inner_text();
 
         match new_znamka {
@@ -98,7 +119,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                             let extracted_znamka = process_percent(&new_znamka);
                             if extracted_znamka.is_some() {
                                 znamky_all
-                                    .push(extracted_znamka.expect("adding a woirking grade failed"))
+                                    .push(extracted_znamka.expect("adding a working grade failed"))
                             }
                         } else {
                             let extracted_znamka = match new_znamka.len() {
