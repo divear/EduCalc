@@ -6,6 +6,11 @@ use headless_chrome::Browser;
 use std::{env, error::Error, fs, /* thread,*/ time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
+struct ZnamkaStruct {
+    predmet: String,
+    nazev: String,
+    znamka: f32,
+}
 
 // the individual processing functions
 fn process_two(znamka: &str) -> Option<f32> {
@@ -52,7 +57,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         println!("znamky page");
 
         tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
-        println!("navigated to grades page");
+        println!("navigated to znamky page");
         match tab.wait_for_element_with_custom_timeout(
             "#edubarStartButton",
             Duration::from_secs(WAIT_LIMIT),
@@ -85,73 +90,105 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     println!("{}", prvni_znamka);
     println!("{}", _prvni_predmet);
     println!("end");
-    let mut znamky_all: Vec<f32> = Vec::new();
-    let mut predmety_all: Vec<String> = Vec::new();
-    let znamky_elements = tab.find_elements(".znZnamka")?;
-    let predmety_elements = tab.find_elements(".app-list-item-main div b")?;
-    for i in &predmety_elements {
-        println!("{:?}", i);
-        let new_znamka = i.get_inner_text();
-        println!("{:?}", new_znamka);
-        if new_znamka.is_ok() {
-            predmety_all.push(new_znamka.expect("nazev predmetu"));
-            println!("predmet saved")
-        } else {
-            println!("fail")
-        }
-    }
-    println!("{:?}", predmety_all);
-    for i in &znamky_elements {
-        // println!("{:?}", i);
-        let new_znamka = i.get_inner_text();
 
-        match new_znamka {
-            Ok(new_znamka) => {
-                println!("new znamka: {:?}", new_znamka);
-                match new_znamka.parse::<f32>() {
-                    Ok(znamka_int) => {
-                        println!("Parsed number: {}", znamka_int.to_string().green());
-                        znamky_all.push(znamka_int);
+    let znamky_all: Vec<f32> = Vec::new();
+    let mut everything_vec: Vec<ZnamkaStruct> = vec![];
+    // let predmety_all: Vec<String> = Vec::new();
+    // let znamky_elements = tab.find_elements(".znZnamka")?;
+    // let predmety_elements = tab.find_elements(".app-list-item-main div:first-of-type b")?;
+    let everything = tab.find_elements(".app-list-item-main")?;
+    // println!("{:?}", &everything.first().get_inner_text());
+
+    for i in everything {
+        let inner_text = i.get_inner_text()?;
+        let all: Vec<&str> = inner_text.lines().collect();
+
+        println!("{:?}", all);
+        let new_znamka = all[2];
+        if all[0] == "Chování" {
+            continue;
+        }
+
+        // match new_znamka {
+        //     Ok(new_znamka) => {
+        //         println!("new znamka: {:?}", new_znamka);
+        let created_znamka = match new_znamka.parse::<f32>() {
+            Ok(znamka_int) => {
+                println!("Parsed number: {}", znamka_int.to_string().green());
+                Ok(znamka_int)
+            }
+            Err(_) => {
+                println!("'{}' není v normálním formátu", new_znamka.yellow());
+                if new_znamka.chars().nth_back(0) == Some('%') {
+                    let extracted_znamka = process_percent(&new_znamka);
+                    if extracted_znamka.is_some() {
+                        Ok(extracted_znamka.expect("adding a working grade failed"))
+                    } else {
+                        Err("extracted_znamka doesnt exist")
                     }
-                    Err(_) => {
-                        println!("'{}' není v normálním formátu", new_znamka.yellow());
-                        if new_znamka.chars().nth_back(0) == Some('%') {
-                            let extracted_znamka = process_percent(&new_znamka);
-                            if extracted_znamka.is_some() {
-                                znamky_all
-                                    .push(extracted_znamka.expect("adding a working grade failed"))
-                            }
-                        } else {
-                            let extracted_znamka = match new_znamka.len() {
-                                1 => {
-                                    println!("+/-/o/S se nevztahuje na prumer");
-                                    None
-                                }
-                                2 => process_two(&new_znamka),
-                                3.. => process_longer(&new_znamka),
-                                _ => {
-                                    println!("the length of grade is 0 or negative!");
-                                    None
-                                }
-                            };
-                            if extracted_znamka.is_none() {
-                                println!("this grade was not counted into the average")
-                            } else {
-                                znamky_all
-                                    .push(extracted_znamka.expect("adding a working grade failed"));
-                                println!("{:?}", extracted_znamka);
-                            }
+                } else {
+                    println!("new_znamka: {:?}", &new_znamka);
+                    let extracted_znamka = match new_znamka.len() {
+                        1 => {
+                            println!("+/-/o/S se nevztahuje na prumer");
+                            None
                         }
+                        2 => process_two(&new_znamka),
+                        3.. => process_longer(&new_znamka),
+                        _ => {
+                            println!("the length of grade is 0 or negative!");
+                            None
+                        }
+                    };
+                    if extracted_znamka.is_none() {
+                        Err("this grade was not counted into the average")
+                    } else {
+                        println!("{:?}", extracted_znamka);
+                        Ok(extracted_znamka.expect("adding a working grade failed"))
                     }
                 }
             }
-            Err(e) => {
-                println!("Failed to get inner text: {:?}", e);
-                // Handle the error case where `get_inner_text` failed.
+        };
+        // }
+        // Err(e) => {
+        //     println!("Failed to get inner text: {:?}", e);
+        //     // Handle the error case where `get_inner_text` failed.
+        // }
+        // }
+        match created_znamka {
+            Ok(created_znamka) => {
+                let new_znamka_instance = ZnamkaStruct {
+                    predmet: all[0].to_string(),
+                    nazev: all[1].to_string(),
+                    znamka: created_znamka,
+                };
+                everything_vec.push(new_znamka_instance);
             }
-        }
+            Err(_) => {
+                println!("error: the created_znamka isn't valid");
+            }
+        };
     }
-    println!("{:?}", znamky_all);
+
+    // for i in &predmety_elements {
+    //     println!("{:?}", i);
+    //     let new_predmet = i.get_inner_text();
+    //     println!("{:?}", new_predmet);
+    //     if new_predmet.is_ok() {
+    //         predmety_all.push(new_predmet.expect("nazev predmetu"));
+    //         println!("predmet saved")
+    //     } else {
+    //         println!("fail")
+    //     }
+    // }
+    // println!("{:?}", predmety_all);
+    // for i in &znamky_elements {
+    //     // println!("{:?}", i);
+    //     let new_znamka = i.get_inner_text();
+    // }
+    // println!("{:?}", znamky_all);
+    // println!("{:?} {:?}", predmety_all.len(), znamky_all.len());
+    // assert_eq!(predmety_all.len(), znamky_all.len());
     let grades_as_string = znamky_all
         .iter()
         .map(|n| n.to_string())
