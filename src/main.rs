@@ -3,9 +3,10 @@ use dotenvy::dotenv;
 // mod prev;
 use headless_chrome::protocol::cdp::Page;
 use headless_chrome::Browser;
-use std::{env, error::Error, fs, /* thread,*/ time::Duration};
+use std::{collections::HashSet, env, error::Error, fs, /* thread,*/ time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
+#[derive(Debug)]
 struct ZnamkaStruct {
     predmet: String,
     nazev: String,
@@ -91,7 +92,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     println!("{}", _prvni_predmet);
     println!("end");
 
-    let znamky_all: Vec<f32> = Vec::new();
+    // let znamky_all: Vec<f32> = Vec::new();
     let mut everything_vec: Vec<ZnamkaStruct> = vec![];
     // let predmety_all: Vec<String> = Vec::new();
     // let znamky_elements = tab.find_elements(".znZnamka")?;
@@ -149,12 +150,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         };
-        // }
-        // Err(e) => {
-        //     println!("Failed to get inner text: {:?}", e);
-        //     // Handle the error case where `get_inner_text` failed.
-        // }
-        // }
         match created_znamka {
             Ok(created_znamka) => {
                 let new_znamka_instance = ZnamkaStruct {
@@ -168,36 +163,25 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 println!("error: the created_znamka isn't valid");
             }
         };
+        println!("{:?}", created_znamka);
     }
 
-    // for i in &predmety_elements {
-    //     println!("{:?}", i);
-    //     let new_predmet = i.get_inner_text();
-    //     println!("{:?}", new_predmet);
-    //     if new_predmet.is_ok() {
-    //         predmety_all.push(new_predmet.expect("nazev predmetu"));
-    //         println!("predmet saved")
-    //     } else {
-    //         println!("fail")
-    //     }
-    // }
-    // println!("{:?}", predmety_all);
-    // for i in &znamky_elements {
-    //     // println!("{:?}", i);
-    //     let new_znamka = i.get_inner_text();
-    // }
-    // println!("{:?}", znamky_all);
-    // println!("{:?} {:?}", predmety_all.len(), znamky_all.len());
-    // assert_eq!(predmety_all.len(), znamky_all.len());
-    let grades_as_string = znamky_all
-        .iter()
-        .map(|n| n.to_string())
-        .collect::<Vec<String>>()
-        .join(", ");
-    fs::write("./assets/last_grades.txt", grades_as_string).expect("unable to write in file"); // in case it fails next time
-    let global_average: f32 =
-        &znamky_all.clone().into_iter().sum::<f32>() / znamky_all.len() as f32;
-    println!("global average grade: {:?}", global_average);
+    let mut set_existujicich_predmetu = HashSet::new();
+    for i in everything_vec {
+        println!("{:?}", i);
+        set_existujicich_predmetu.insert(i.predmet);
+    }
+    println!("{:?}", set_existujicich_predmetu);
+
+    // let grades_as_string = znamky_all
+    //     .iter()
+    //     .map(|n| n.to_string())
+    //     .collect::<Vec<String>>()
+    //     .join(", ");
+    // fs::write("./assets/last_grades.txt", grades_as_string).expect("unable to write in file"); // in case it fails next time
+    // let global_average: f32 =
+    //     &znamky_all.clone().into_iter().sum::<f32>() / znamky_all.len() as f32;
+    // println!("global average grade: {:?}", global_average);
 
     Ok(())
 }
