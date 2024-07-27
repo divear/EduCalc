@@ -4,3 +4,4 @@
 - [x] start checking: if the grade page takes too long, try again
 - [ ] add the 15 sec timer; maybe on another thread(?);
 - [ ] make it differenciate individual school subjects
+- [ ] make it ask you your credentials if there are none found in .env
