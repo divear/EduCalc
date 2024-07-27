@@ -3,7 +3,10 @@ use dotenvy::dotenv;
 // mod prev;
 use headless_chrome::protocol::cdp::Page;
 use headless_chrome::Browser;
-use std::{collections::HashSet, env, error::Error, fs, /* thread,*/ time::Duration};
+use std::{
+    collections::HashSet, env, error::Error, fs, io, io::prelude::*,
+    /* thread,*/ time::Duration,
+};
 
 const WAIT_LIMIT: u64 = 15;
 #[derive(Debug)]
@@ -12,6 +15,10 @@ struct ZnamkaStruct {
     nazev: String,
     znamka: f32,
 }
+// struct PredmetStruct {
+//     predmet: String,
+//     znamky: Vec<f32>,
+// }
 
 // the individual processing functions
 fn process_two(znamka: &str) -> Option<f32> {
@@ -167,21 +174,30 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let mut set_existujicich_predmetu = HashSet::new();
-    for i in everything_vec {
-        println!("{:?}", i);
-        set_existujicich_predmetu.insert(i.predmet);
+    for i in &everything_vec {
+        // println!("{:?}", &i);
+        set_existujicich_predmetu.insert(&i.predmet);
     }
-    println!("{:?}", set_existujicich_predmetu);
+    for (i, p) in set_existujicich_predmetu.clone().into_iter().enumerate() {
+        println!("{}) - {}", i, p);
+        // for j in &everything_vec {
+        //     if (j == i) {}
+        // }
+    }
+    print!("Pro který předmět chcete vypočítat průměr?");
 
-    // let grades_as_string = znamky_all
-    //     .iter()
-    //     .map(|n| n.to_string())
-    //     .collect::<Vec<String>>()
-    //     .join(", ");
-    // fs::write("./assets/last_grades.txt", grades_as_string).expect("unable to write in file"); // in case it fails next time
-    // let global_average: f32 =
-    //     &znamky_all.clone().into_iter().sum::<f32>() / znamky_all.len() as f32;
-    // println!("global average grade: {:?}", global_average);
+    let stdin = io::stdin();
+    let predmet_pick_index: usize = stdin.lock().lines().next().unwrap().unwrap().parse()?;
+    // random order, because HashSet
+    let predmet_pick = Vec::from_iter(&set_existujicich_predmetu)[predmet_pick_index];
+    println!("\nVybrali jste: {}", predmet_pick);
+    let mut picked_predmet_znamky: Vec<f32> = vec![];
+    for i in &everything_vec {
+        if i.predmet == **predmet_pick {
+            picked_predmet_znamky.push(i.znamka);
+        }
+    }
+    println!("{:?}", picked_predmet_znamky);
 
     Ok(())
 }
