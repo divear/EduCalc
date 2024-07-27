@@ -46,6 +46,13 @@ fn process_percent(znamka: &str) -> Option<f32> {
     println!("{}", znamka);
     Some(znamka)
 }
+fn prompt_and_read(prompt: &str) -> Result<usize, Box<dyn std::error::Error>> {
+    print!("{}", prompt);
+    io::stdout().flush()?;
+    let mut input = String::new();
+    io::stdin().lock().read_line(&mut input)?;
+    Ok(input.trim().parse()?)
+}
 
 pub fn main() -> Result<(), Box<dyn Error>> {
     let browser = Browser::default()?;
@@ -203,16 +210,18 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         //     if (j == i) {}
         // }
     }
+    // fn input_number() -> Option<usize> {
+    //     let x = io::stdin()
+    //         .lock()
+    //         .lines()
+    //         .next()
+    //         .unwrap()
+    //         .unwrap()
+    //         .parse()?;
+    //     x
+    // }
     for _ in 1..10 {
-        print!("Pro který předmět chcete vypočítat průměr? ");
-        io::stdout().flush().unwrap(); // Ensures the prompt is displayed before waiting for input
-        let predmet_pick_index: usize = io::stdin()
-            .lock()
-            .lines()
-            .next()
-            .unwrap()
-            .unwrap()
-            .parse()?;
+        let predmet_pick_index = prompt_and_read("Pro který předmět chcete vypočítat průměr? ")?;
         // random order, because HashSet
         let predmet_pick = Vec::from_iter(&set_existujicich_predmetu)[predmet_pick_index];
         println!("\nVybrali jste: {}", predmet_pick);
@@ -231,6 +240,16 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         println!("{:?}", picked_predmet_znamky);
         println!(
             "Váš stávající průměr: {}",
+            picked_predmet_znamky.clone().into_iter().sum::<f32>()
+                / picked_predmet_vahy.clone().into_iter().sum::<f32>()
+        );
+        let nova_znamka: f32 = prompt_and_read("Zadejte novou známku: ")? as f32;
+        let nova_vaha: f32 = prompt_and_read("Zadejte její váhu: ")? as f32;
+        println!("Nová známka: {}, Váha: {}", nova_znamka, nova_vaha);
+        picked_predmet_znamky.push(nova_znamka * nova_vaha);
+        picked_predmet_vahy.push(nova_vaha);
+        println!(
+            "Váš nový průměr: {}\n",
             picked_predmet_znamky.clone().into_iter().sum::<f32>()
                 / picked_predmet_vahy.clone().into_iter().sum::<f32>()
         );
