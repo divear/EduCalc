@@ -55,6 +55,7 @@ fn prompt_and_read(prompt: &str) -> Result<usize, Box<dyn std::error::Error>> {
 }
 
 pub fn main() -> Result<(), Box<dyn Error>> {
+    println!("starting script");
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
     dotenv().expect(".env file not found - follow instructions in the README");
@@ -83,6 +84,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             }
             Err(_) => {
                 println!("could not find, trying again");
+                let _ = main();
             }
         };
     }
@@ -92,48 +94,26 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     // Save the screenshot to disc
     fs::write("./assets/screenshot.png", jpeg_data)?;
 
-    println!("start");
-    let prvni_znamka = tab
-        .wait_for_element_with_custom_timeout(".znZnamka", Duration::from_secs(WAIT_LIMIT))?
-        .get_inner_text()?;
-    let _prvni_predmet = tab
-        .wait_for_element_with_custom_timeout(
-            ".app-list-item-main div b",
-            Duration::from_secs(WAIT_LIMIT),
-        )?
-        .get_inner_text()?;
-    println!("{}", prvni_znamka);
-    println!("{}", _prvni_predmet);
-    println!("end");
-
-    // let znamky_all: Vec<f32> = Vec::new();
     let mut everything_vec: Vec<ZnamkaStruct> = vec![];
-    // let predmety_all: Vec<String> = Vec::new();
-    // let znamky_elements = tab.find_elements(".znZnamka")?;
-    // let predmety_elements = tab.find_elements(".app-list-item-main div:first-of-type b")?;
     let everything = tab.find_elements(".app-list-item-main")?;
-    // println!("{:?}", &everything.first().get_inner_text());
 
     for i in everything {
         let inner_text = i.get_inner_text()?;
         let all: Vec<&str> = inner_text.lines().collect();
 
-        println!("{:?}", all);
+        // println!("{:?}", all);
         let new_znamka = all[2];
         if all[0] == "Chování" || all[1] == "Vysvědčení" {
             continue;
         }
 
-        // match new_znamka {
-        //     Ok(new_znamka) => {
-        //         println!("new znamka: {:?}", new_znamka);
         let created_znamka = match new_znamka.parse::<f32>() {
             Ok(znamka_int) => {
                 println!("Parsed number: {}", znamka_int.to_string().green());
                 Ok(znamka_int)
             }
             Err(_) => {
-                println!("'{}' není v normálním formátu", new_znamka.yellow());
+                // println!("'{}' není v normálním formátu", new_znamka.yellow());
                 if new_znamka.chars().nth_back(0) == Some('%') {
                     let extracted_znamka = process_percent(&new_znamka);
                     if extracted_znamka.is_some() {
@@ -142,10 +122,10 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                         Err("extracted_znamka doesnt exist")
                     }
                 } else {
-                    println!("new_znamka: {:?}", &new_znamka);
+                    // println!("new_znamka: {:?}", &new_znamka);
                     let extracted_znamka = match new_znamka.len() {
                         1 => {
-                            println!("+/-/o/S se nevztahuje na prumer");
+                            // println!("+/-/o/S se nevztahuje na prumer");
                             None
                         }
                         2 => process_two(&new_znamka),
@@ -158,7 +138,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                     if extracted_znamka.is_none() {
                         Err("this grade was not counted into the average")
                     } else {
-                        println!("{:?}", extracted_znamka);
+                        // println!("{:?}", extracted_znamka);
                         Ok(extracted_znamka.expect("adding a working grade failed"))
                     }
                 }
@@ -168,23 +148,19 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             Ok(created_znamka) => {
                 if let Some(start) = all[1].find('∙') {
                     if let Some(end) = all[1].find('×') {
-                        if start < end {
-                            let start_pos = start + '∙'.len_utf8();
-                            let result = &all[1][start_pos..end].trim();
-                            let vaha = result.parse().unwrap();
-                            println!("vaha: {}", vaha);
-                            let new_znamka_instance = ZnamkaStruct {
-                                predmet: all[0].to_string(),
-                                nazev: all[1].to_string(),
-                                znamka: created_znamka,
-                                vaha,
-                            };
-                            println!("vaha saved: {}", new_znamka_instance.vaha);
-                            println!("znamka saved: {}", new_znamka_instance.znamka);
-                            everything_vec.push(new_znamka_instance);
-                        } else {
-                            println!("The '×' character comes before the '∙' character.");
-                        }
+                        let start_pos = start + '∙'.len_utf8();
+                        let result = &all[1][start_pos..end].trim();
+                        let vaha = result.parse().unwrap();
+                        // println!("vaha: {}", vaha);
+                        let new_znamka_instance = ZnamkaStruct {
+                            predmet: all[0].to_string(),
+                            nazev: all[1].to_string(),
+                            znamka: created_znamka,
+                            vaha,
+                        };
+                        // println!("vaha saved: {}", new_znamka_instance.vaha);
+                        // println!("znamka saved: {}", new_znamka_instance.znamka);
+                        everything_vec.push(new_znamka_instance);
                     } else {
                         println!("The '×' character was not found.");
                     }
@@ -196,48 +172,35 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 println!("error: the created_znamka isn't valid");
             }
         };
-        println!("{:?}", created_znamka);
+        // println!("{:?}", created_znamka);
     }
-
+    print!("{}[2J", 27 as char); //clear the screen
     let mut set_existujicich_predmetu = HashSet::new();
     for i in &everything_vec {
         // println!("{:?}", &i);
         set_existujicich_predmetu.insert(&i.predmet);
     }
-    for (i, p) in set_existujicich_predmetu.clone().into_iter().enumerate() {
+    let mut vec_predmetu = Vec::from_iter(set_existujicich_predmetu);
+    vec_predmetu.sort();
+    for (i, p) in vec_predmetu.clone().into_iter().enumerate() {
         println!("{}) - {}", i, p);
-        // for j in &everything_vec {
-        //     if (j == i) {}
-        // }
     }
-    // fn input_number() -> Option<usize> {
-    //     let x = io::stdin()
-    //         .lock()
-    //         .lines()
-    //         .next()
-    //         .unwrap()
-    //         .unwrap()
-    //         .parse()?;
-    //     x
-    // }
-    for _ in 1..10 {
+    for _ in 1.. {
         let predmet_pick_index = prompt_and_read("Pro který předmět chcete vypočítat průměr? ")?;
         // random order, because HashSet
-        let predmet_pick = Vec::from_iter(&set_existujicich_predmetu)[predmet_pick_index];
+        let predmet_pick = &vec_predmetu[predmet_pick_index];
         println!("\nVybrali jste: {}", predmet_pick);
-        let mut x: Vec<f32> = vec![];
         let mut picked_predmet_znamky: Vec<f32> = vec![];
         let mut picked_predmet_vahy: Vec<f32> = vec![];
         for i in &everything_vec {
             if i.predmet == **predmet_pick {
-                x.push(i.znamka);
                 picked_predmet_znamky.push(i.znamka * i.vaha);
                 picked_predmet_vahy.push(i.vaha);
             }
         }
-        println!("{:?}", x);
-        println!("{:?}", picked_predmet_vahy);
-        println!("{:?}", picked_predmet_znamky);
+        // println!("{:?}", x);
+        // println!("{:?}", picked_predmet_vahy);
+        // println!("{:?}", picked_predmet_znamky);
         println!(
             "Váš stávající průměr: {}",
             picked_predmet_znamky.clone().into_iter().sum::<f32>()
