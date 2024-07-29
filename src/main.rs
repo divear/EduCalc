@@ -1,12 +1,6 @@
-// use colored::Colorize;
 use dotenvy::dotenv;
-// mod prev;
-use headless_chrome::protocol::cdp::Page;
 use headless_chrome::Browser;
-use std::{
-    collections::HashSet, env, error::Error, fs, io, io::prelude::*,
-    /* thread,*/ time::Duration,
-};
+use std::{collections::HashSet, env, error::Error, io, io::prelude::*, time::Duration};
 
 const WAIT_LIMIT: u64 = 15;
 struct ZnamkaStruct {
@@ -14,10 +8,6 @@ struct ZnamkaStruct {
     znamka: f32,
     vaha: f32,
 }
-// struct PredmetStruct {
-//     predmet: String,
-//     znamky: Vec<f32>,
-// }
 
 // the individual processing functions
 fn process_two(znamka: &str) -> Option<f32> {
@@ -45,21 +35,36 @@ fn prompt_and_read(prompt: &str) -> Result<usize, Box<dyn std::error::Error>> {
     io::stdin().lock().read_line(&mut input)?;
     Ok(input.trim().parse()?)
 }
+fn prompt_and_read_creds(prompt: &str) -> String {
+    print!("{}", prompt);
+    io::stdout().flush().expect("failed to flush stdout");
+    let mut input = String::new();
+    io::stdin()
+        .lock()
+        .read_line(&mut input)
+        .expect("failed to read line from user");
+    input.trim().to_string()
+}
 
 pub fn main() -> Result<(), Box<dyn Error>> {
     println!("starting script");
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
+
+    let username: String;
+    let password: String;
     match dotenv() {
         Ok(..) => {
-            println!("loaded .env file")
+            println!("loaded .env file");
+            username = env::var("USERNAME").expect("USERNAME environment variable not set");
+            password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
         }
         Err(..) => {
-            println!(".env doesn't exist")
+            println!(".env doesn't exist");
+            username = prompt_and_read_creds("Your EduPage username: ").to_string();
+            password = prompt_and_read_creds("Your EduPage password: ").to_string();
         }
     }
-    let username = env::var("USERNAME").expect("USERNAME environment variable not set");
-    let password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
 
     loop {
         tab.navigate_to("https://sspbrno.edupage.org/login/edubarLogin.php")?;
@@ -68,7 +73,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         tab.wait_for_element("input#home_Login_2e2")?.click()?;
         tab.type_str(&password)?.press_key("Enter")?;
 
-        println!("znamky page");
+        println!("finished signin");
 
         tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
         println!("navigated to znamky page");
@@ -81,16 +86,11 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 break;
             }
             Err(_) => {
-                println!("could not find, trying again");
+                println!("Grades not found; trying again");
                 let _ = main();
             }
         };
     }
-
-    let jpeg_data =
-        tab.capture_screenshot(Page::CaptureScreenshotFormatOption::Png, None, None, true)?;
-    // Save the screenshot to disc
-    fs::write("./assets/screenshot.png", jpeg_data)?;
 
     let mut everything_vec: Vec<ZnamkaStruct> = vec![];
     let everything = tab.find_elements(".app-list-item-main")?;
@@ -183,10 +183,10 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         println!("{}) - {}", i, p);
     }
     for _ in 1.. {
-        let predmet_pick_index = prompt_and_read("Pro který předmět chcete vypočítat průměr? ")?;
+        let predmet_pick_index = prompt_and_read("Choose subject: ")?;
         // random order, because HashSet
         let predmet_pick = &vec_predmetu[predmet_pick_index];
-        println!("\nVybrali jste: {}", predmet_pick);
+        println!("\nYou chose: {}", predmet_pick);
         let mut picked_predmet_znamky: Vec<f32> = vec![];
         let mut picked_predmet_vahy: Vec<f32> = vec![];
         for i in &everything_vec {
@@ -199,17 +199,17 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         // println!("{:?}", picked_predmet_vahy);
         // println!("{:?}", picked_predmet_znamky);
         println!(
-            "Váš stávající průměr: {}",
+            "Your current average: {}",
             picked_predmet_znamky.clone().into_iter().sum::<f32>()
                 / picked_predmet_vahy.clone().into_iter().sum::<f32>()
         );
-        let nova_znamka: f32 = prompt_and_read("Zadejte novou známku: ")? as f32;
-        let nova_vaha: f32 = prompt_and_read("Zadejte její váhu: ")? as f32;
-        println!("Nová známka: {}, Váha: {}", nova_znamka, nova_vaha);
+        let nova_znamka: f32 = prompt_and_read("Add new grade: ")? as f32;
+        let nova_vaha: f32 = prompt_and_read("The grade's weight: ")? as f32;
+        println!("New grade: {}, Weight: {}", nova_znamka, nova_vaha);
         picked_predmet_znamky.push(nova_znamka * nova_vaha);
         picked_predmet_vahy.push(nova_vaha);
         println!(
-            "Váš nový průměr: {}\n",
+            "Your new calculated average: {}\n",
             picked_predmet_znamky.clone().into_iter().sum::<f32>()
                 / picked_predmet_vahy.clone().into_iter().sum::<f32>()
         );
