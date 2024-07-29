@@ -1,4 +1,4 @@
-use colored::Colorize;
+// use colored::Colorize;
 use dotenvy::dotenv;
 // mod prev;
 use headless_chrome::protocol::cdp::Page;
@@ -9,10 +9,8 @@ use std::{
 };
 
 const WAIT_LIMIT: u64 = 15;
-#[derive(Debug)]
 struct ZnamkaStruct {
     predmet: String,
-    nazev: String,
     znamka: f32,
     vaha: f32,
 }
@@ -24,26 +22,20 @@ struct ZnamkaStruct {
 // the individual processing functions
 fn process_two(znamka: &str) -> Option<f32> {
     // 2- etc.
-    println!("{} passed into process_two", znamka);
     let returned = znamka.chars().nth(0).unwrap().to_string();
     let returned_num: f32 = returned.parse().expect("a proper float");
-    println!("{:?}", returned_num);
+    // println!("{:?}", returned_num);
     Some(returned_num + 0.5)
 }
 fn process_longer(znamka: &str) -> Option<f32> {
     // 9 / 15 = 60% → 3 etc.
-    println!("{} passed into process_longer", znamka);
-
     let returned = znamka.chars().nth_back(0).unwrap().to_string();
     let returned_num: f32 = returned.parse().expect("a proper float");
-    println!("{:?}", returned_num);
     Some(returned_num)
 }
 fn process_percent(znamka: &str) -> Option<f32> {
     // 100% etc.
-    println!("{} passed into process_percent", znamka);
     let znamka: f32 = znamka.replace("%", "").parse().expect("a proper float");
-    println!("{}", znamka);
     Some(znamka)
 }
 fn prompt_and_read(prompt: &str) -> Result<usize, Box<dyn std::error::Error>> {
@@ -58,12 +50,18 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     println!("starting script");
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
-    dotenv().expect(".env file not found - follow instructions in the README");
+    match dotenv() {
+        Ok(..) => {
+            println!("loaded .env file")
+        }
+        Err(..) => {
+            println!(".env doesn't exist")
+        }
+    }
     let username = env::var("USERNAME").expect("USERNAME environment variable not set");
     let password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
 
     loop {
-        println!("signing in");
         tab.navigate_to("https://sspbrno.edupage.org/login/edubarLogin.php")?;
         tab.wait_for_element("input#home_Login_2e1")?.click()?;
         tab.type_str(&username)?;
@@ -109,7 +107,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
         let created_znamka = match new_znamka.parse::<f32>() {
             Ok(znamka_int) => {
-                println!("Parsed number: {}", znamka_int.to_string().green());
+                // println!("Parsed number: {}", znamka_int.to_string().green());
                 Ok(znamka_int)
             }
             Err(_) => {
@@ -154,7 +152,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                         // println!("vaha: {}", vaha);
                         let new_znamka_instance = ZnamkaStruct {
                             predmet: all[0].to_string(),
-                            nazev: all[1].to_string(),
                             znamka: created_znamka,
                             vaha,
                         };
