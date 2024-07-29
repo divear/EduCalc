@@ -1,7 +1,12 @@
 - [x] start checking: if the grade page takes too long, try again
 - [x] add the 15 sec timer; maybe on another thread(?);
 - [x] make it differenciate individual school subjects
+- [x] make it ask you your credentials if there are none found in .env
+- [x] censor the password while typing it in
 
-- [ ] make it ask you your credentials if there are none found in .env
 - [ ] rewrite to reduce redundancy
 - [ ] gui
+
+
+
+- [ ] write a blog about this 

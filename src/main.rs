@@ -1,3 +1,4 @@
+use colored::Colorize;
 use dotenvy::dotenv;
 use headless_chrome::Browser;
 use std::{collections::HashSet, env, error::Error, io, io::prelude::*, time::Duration};
@@ -47,7 +48,6 @@ fn prompt_and_read_creds(prompt: &str) -> String {
 }
 
 pub fn main() -> Result<(), Box<dyn Error>> {
-    println!("starting script");
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
 
@@ -55,14 +55,17 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     let password: String;
     match dotenv() {
         Ok(..) => {
-            println!("loaded .env file");
+            println!(".env found, signing in...");
             username = env::var("USERNAME").expect("USERNAME environment variable not set");
             password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
         }
         Err(..) => {
-            println!(".env doesn't exist");
+            println!(".env not found, sign in manually: ");
             username = prompt_and_read_creds("Your EduPage username: ").to_string();
-            password = prompt_and_read_creds("Your EduPage password: ").to_string();
+
+            print!("Your EduPage password: ");
+            io::stdout().flush().expect("failed to flush stdout");
+            password = rpassword::read_password().unwrap();
         }
     }
 
@@ -73,16 +76,24 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         tab.wait_for_element("input#home_Login_2e2")?.click()?;
         tab.type_str(&password)?.press_key("Enter")?;
 
-        println!("finished signin");
+        match tab.wait_for_element(".user-button-icon-outer") {
+            Ok(_) => {
+                println!("Signed in successfully!")
+            }
+            Err(_) => {
+                println!("Wrong credentials");
+                let _ = main();
+            }
+        };
+        // println!("finished signin");
 
         tab.navigate_to("https://sspbrno.edupage.org/znamky/?eqa=d2hhdD1zdHVkZW50dmlld2VyJnBvaGxhZD1wb2RsYURhdHVtdSZ6bmFta3lfeWVhcmlkPTIwMjMmem5hbWt5X3llYXJpZF9ucz0xJm5hZG9iZG9iaWU9UDImcm9rb2Jkb2JpZT0yMDIzJTNBJTNBUDImZG9ScT0xJndoYXQ9c3R1ZGVudHZpZXdlciZ1cGRhdGVMYXN0Vmlldz0w")?;
-        println!("navigated to znamky page");
+        println!("Getting the grades...");
         match tab.wait_for_element_with_custom_timeout(
             "#edubarStartButton",
             Duration::from_secs(WAIT_LIMIT),
         ) {
-            Ok(d) => {
-                Some(d);
+            Ok(_) => {
                 break;
             }
             Err(_) => {
@@ -107,7 +118,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 
         let created_znamka = match new_znamka.parse::<f32>() {
             Ok(znamka_int) => {
-                // println!("Parsed number: {}", znamka_int.to_string().green());
+                println!("Parsed grade: {}", znamka_int.to_string().green());
                 Ok(znamka_int)
             }
             Err(_) => {
@@ -166,7 +177,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             Err(_) => {
-                println!("error: the created_znamka isn't valid");
+                // println!("error: the created_znamka {:?} isn't valid", created_znamka);
             }
         };
         // println!("{:?}", created_znamka);
@@ -182,8 +193,11 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     for (i, p) in vec_predmetu.clone().into_iter().enumerate() {
         println!("{}) - {}", i, p);
     }
-    for _ in 1.. {
-        let predmet_pick_index = prompt_and_read("Choose subject: ")?;
+    loop {
+        let last_predmet_index = vec_predmetu.len() - 1;
+        let predmet_pick_index =
+            prompt_and_read(&format!("Choose subject [0-{}]: ", last_predmet_index))?;
+
         // random order, because HashSet
         let predmet_pick = &vec_predmetu[predmet_pick_index];
         println!("\nYou chose: {}", predmet_pick);
@@ -214,5 +228,5 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 / picked_predmet_vahy.clone().into_iter().sum::<f32>()
         );
     }
-    Ok(())
+    // Ok(())
 }
