@@ -24,4 +24,4 @@ It just scrapes the site and calculates it.
 
 ## Known issues
 
-- Edupage is unreliable and sometimes it simply doesn't scrape the results
+- Edupage is unreliable and sometimes the results simply can't be scraped

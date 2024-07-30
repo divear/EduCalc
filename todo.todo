@@ -4,8 +4,8 @@
 - [x] make it ask you your credentials if there are none found in .env
 - [x] censor the password while typing it in
 
-- [ ] rewrite to reduce redundancy
 - [ ] gui
+- [ ] make icons
 
 
 
