@@ -3,13 +3,25 @@
 
 use colored::Colorize;
 use headless_chrome::Browser;
-use std::{collections::HashSet, env, error::Error, io, io::prelude::*, time::Duration};
-
+use std::{collections::HashSet, env, error::Error, fmt, time::Duration};
 const WAIT_LIMIT: u64 = 15;
 struct ZnamkaStruct {
     predmet: String,
     znamka: f32,
     vaha: f32,
+}
+impl fmt::Display for ZnamkaStruct {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        println!(
+            "[\"{}\",\"{}\",\"{}\"]",
+            self.predmet, self.znamka, self.vaha
+        );
+        write!(
+            f,
+            "[\"{}\",\"{}\",\"{}\"]",
+            self.predmet, self.znamka, self.vaha
+        )
+    }
 }
 
 // the individual processing functions
@@ -31,44 +43,42 @@ fn process_percent(znamka: &str) -> Option<f32> {
     let znamka: f32 = znamka.replace("%", "").parse().expect("a proper float");
     Some(znamka)
 }
-fn prompt_and_read(prompt: &str) -> Result<usize, Box<dyn std::error::Error>> {
-    print!("{}", prompt);
-    io::stdout().flush()?;
-    let mut input = String::new();
-    io::stdin().lock().read_line(&mut input)?;
-    Ok(input.trim().parse()?)
-}
-fn prompt_and_read_creds(prompt: &str) -> String {
-    print!("{}", prompt);
-    io::stdout().flush().expect("failed to flush stdout");
-    let mut input = String::new();
-    io::stdin()
-        .lock()
-        .read_line(&mut input)
-        .expect("failed to read line from user");
-    input.trim().to_string()
-}
 
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }
 #[tauri::command]
-fn subjects(username: &str, password: &str) -> String {
-    format!("Hello, {}{}!", username, password);
+fn subjects(username: &str, password: &str) -> (String, String) {
     match get_subjects(username, password) {
-        Ok(d) => {
+        Ok((subjects, grades)) => {
             println!("success");
-            d
+            (subjects, grades)
         }
-        Err(_) => {
-            println!("bad data");
-            String::from("could not get grades")
+        Err(err) => {
+            println!("bad data {}", err);
+            (
+                String::from("could not get subjects"),
+                String::from("could not get grades"),
+            )
         }
     }
 }
-
-fn get_subjects(username: &str, password: &str) -> Result<String, Box<dyn Error>> {
+// #[tauri::command]
+// fn grades(subject: &str) -> String {
+//     match get_grades(subject) {
+//         Ok(d) => {
+//             println!("success");
+//             d
+//         }
+//         Err(_) => {
+//             println!("bad data");
+//             String::from("could not get grades")
+//         }
+//     }
+// }
+//
+fn get_subjects(username: &str, password: &str) -> Result<(String, String), Box<dyn Error>> {
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
 
@@ -192,13 +202,16 @@ fn get_subjects(username: &str, password: &str) -> Result<String, Box<dyn Error>
     }
     let mut vec_predmetu = Vec::from_iter(set_existujicich_predmetu);
     vec_predmetu.sort();
-    for (i, p) in vec_predmetu.clone().into_iter().enumerate() {
-        println!("{}) - {}", i, p);
-    }
-    Ok(vec_predmetu
-        .iter()
-        .map(|x| x.to_string() + ",")
-        .collect::<String>())
+    Ok((
+        vec_predmetu
+            .iter()
+            .map(|x| x.to_string() + ",")
+            .collect::<String>(),
+        everything_vec
+            .iter()
+            .map(|x| x.to_string() + ",")
+            .collect::<String>(),
+    ))
 }
 
 pub fn main() {
@@ -206,22 +219,4 @@ pub fn main() {
         .invoke_handler(tauri::generate_handler![greet, subjects])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
-    // match dotenv() {
-    //     Ok(..) => {
-    //         println!(".env found, signing in...");
-    //         username = env::var("USERNAME").expect("USERNAME environment variable not set");
-    //         password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
-    //     }
-    //     Err(..) => {
-    //         println!(".env not found, sign in manually: ");
-    //         username = prompt_and_read_creds("Your EduPage username: ").to_string();
-    //
-    //         print!("Your EduPage password: ");
-    //         io::stdout().flush().expect("failed to flush stdout");
-    //         password = rpassword::read_password().unwrap();
-    //     }
-    // }
-
-    // Ok(())
 }

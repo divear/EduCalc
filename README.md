@@ -1,6 +1,11 @@
 # EduPage grade average calculator
 
-For some reason edupage doesn't have this build in, so I made this small script to calculate what would happen to your grade average if you received a new grade.
+For some reason edupage doesn't have this built in, so I made this small script to calculate what would happen to your grade average if you received a new grade.
+
+
+
+- Internet connection required
+
 
 ## How do I use this?
 

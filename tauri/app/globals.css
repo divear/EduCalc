@@ -39,6 +39,10 @@ body {
   display: none;
 }
 
+.signin {
+  font-size: 3rem;
+  text-align: center;
+}
 input {
   color: black;
 }
@@ -71,11 +75,12 @@ button {
   display: grid;
   grid-template-columns: repeat(3, auto);
   margin: 1vw;
-  background: red;
   width: 80%;
   height: 20%;
 }
 .subject {
-  width: 100%;
-  margin: 0 1vw;
+  font-size: 1rem;
+  width: 90%;
+  padding: 1vw;
+  margin: 1vw;
 }

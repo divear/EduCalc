@@ -1,38 +1,49 @@
 "use client";
 // import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 // import logo from "../public/vercel.svg";
 
 export default function Home() {
-  const [greeting, setGreeting] = useState("");
   const [grades, setGrades] = useState("");
   const [subjects, setSubjects] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    invoke<string>("greet", { name: "Next.js" })
-      .then((result) => setGreeting(result))
-      .catch(console.error);
-  }, []);
-
   function signin(e: any) {
     e.preventDefault();
     console.log(`sign in ${username} ${password}`);
     invoke<string>("subjects", { username, password })
-      .then((result) => setSubjects(result))
+      .then((result) => {
+        console.log(result);
+        setSubjects(result[0]);
+        setGrades(result[1]);
+        console.log(result[1]);
+      })
       .catch(console.error);
-    console.log(subjects);
   }
-  function chooseSubject(d: string) {
-    invoke<string>("grades", { subject: d })
-      .then((result) => setGrades(result))
-      .catch(console.error);
-    console.log(subjects);
+  function chooseSubject(chose: string) {
+    let parsed = JSON.parse(`[${grades.slice(0, -1)}]`);
+    let znamky: Array<number> = [];
+    let prumery: Array<number> = [];
+    parsed.forEach((p: Array<string>) => {
+      console.log(p);
+      if (chose == p[0]) {
+        let newZnamka = parseInt(p[1]) * parseInt(p[2]);
+        znamky.push(newZnamka);
+        prumery.push(parseInt(p[2]));
+      }
+    });
+    console.log(znamky);
+    let prumer =
+      znamky.reduce((partialSum, a) => partialSum + a, 0) /
+      prumery.reduce((partialSum, a) => partialSum + a, 0);
+    console.log(prumer);
   }
+  console.log(subjects.split(","));
   return (
-    <main className="content ">
+    <main className="content">
+      <h1>{subjects}</h1>
       <h1>{grades}</h1>
       <form
         className={grades || subjects ? "none" : "signin"}
@@ -49,19 +60,22 @@ export default function Home() {
         <br />
         <button className="signButton">Sign in</button>
       </form>
-      {/*<h1 className="header">Choose a subject: </h1>*/}
       <div className={subjects ? "subjects" : "none"}>
-        {subjects.split(",").map((d) => {
-          return (
-            <button
-              key={d}
-              onClick={() => chooseSubject(d)}
-              className="subject"
-            >
-              {d}
-            </button>
-          );
-        })}
+        <h1 className="header">Choose a subject: </h1>
+        {subjects
+          .slice(0, -1)
+          .split(",")
+          .map((d: string) => {
+            return (
+              <button
+                key={d}
+                onClick={() => chooseSubject(d)}
+                className="subject"
+              >
+                {d}
+              </button>
+            );
+          })}
       </div>
     </main>
   );
