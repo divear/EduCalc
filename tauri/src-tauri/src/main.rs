@@ -45,10 +45,6 @@ fn process_percent(znamka: &str) -> Option<f32> {
 }
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}!", name)
-}
-#[tauri::command]
 fn subjects(username: &str, password: &str) -> (String, String) {
     match get_subjects(username, password) {
         Ok((subjects, grades)) => {
@@ -64,20 +60,6 @@ fn subjects(username: &str, password: &str) -> (String, String) {
         }
     }
 }
-// #[tauri::command]
-// fn grades(subject: &str) -> String {
-//     match get_grades(subject) {
-//         Ok(d) => {
-//             println!("success");
-//             d
-//         }
-//         Err(_) => {
-//             println!("bad data");
-//             String::from("could not get grades")
-//         }
-//     }
-// }
-//
 fn get_subjects(username: &str, password: &str) -> Result<(String, String), Box<dyn Error>> {
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
@@ -216,7 +198,7 @@ fn get_subjects(username: &str, password: &str) -> Result<(String, String), Box<
 
 pub fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, subjects])
+        .invoke_handler(tauri::generate_handler![subjects])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

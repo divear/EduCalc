@@ -9,6 +9,12 @@ export default function Home() {
   const [subjects, setSubjects] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [newGrade, setNewGrade] = useState("");
+  const [newValue, setNewValue] = useState("1");
+  const [newAverage, setNewAverage] = useState<number>();
+  const [currAverage, setCurrAverage] = useState<number>();
+  const [chosenGrades, setChosenGrades] = useState<number[]>();
+  const [chosenValues, setChosenValues] = useState<number[]>();
 
   function signin(e: any) {
     e.preventDefault();
@@ -25,26 +31,47 @@ export default function Home() {
   function chooseSubject(chose: string) {
     let parsed = JSON.parse(`[${grades.slice(0, -1)}]`);
     let znamky: Array<number> = [];
-    let prumery: Array<number> = [];
+    let vahy: Array<number> = [];
     parsed.forEach((p: Array<string>) => {
-      console.log(p);
       if (chose == p[0]) {
+        console.log(p);
         let newZnamka = parseInt(p[1]) * parseInt(p[2]);
         znamky.push(newZnamka);
-        prumery.push(parseInt(p[2]));
+        vahy.push(parseInt(p[2]));
+        console.log(vahy);
       }
     });
-    console.log(znamky);
+    console.log(vahy);
+    setChosenGrades(znamky);
+    setChosenValues(vahy);
     let prumer =
       znamky.reduce((partialSum, a) => partialSum + a, 0) /
-      prumery.reduce((partialSum, a) => partialSum + a, 0);
+      vahy.reduce((partialSum, a) => partialSum + a, 0);
     console.log(prumer);
+    setCurrAverage(prumer);
   }
-  console.log(subjects.split(","));
+
+  function calcAverage(grade: string, value: string) {
+    console.log(chosenGrades);
+    console.log(chosenValues);
+    if (!chosenValues || !chosenGrades) return;
+    let gradTemp = chosenGrades.toSorted(); // to copy by value
+    let valuTemp = chosenValues.toSorted(); // to copy by value
+    gradTemp.push(parseInt(grade) * parseInt(value));
+    valuTemp.push(parseInt(value));
+    console.log(gradTemp);
+    console.log(valuTemp);
+
+    let prumer =
+      gradTemp.reduce((partialSum, a) => partialSum + a, 0) /
+      valuTemp.reduce((partialSum, a) => partialSum + a, 0);
+    console.log(prumer);
+
+    setNewAverage(prumer);
+  }
+
   return (
     <main className="content">
-      <h1>{subjects}</h1>
-      <h1>{grades}</h1>
       <form
         className={grades || subjects ? "none" : "signin"}
         onSubmit={(e) => signin(e)}
@@ -59,9 +86,14 @@ export default function Home() {
 
         <br />
         <button className="signButton">Sign in</button>
+        <p className="text-sm m-5">
+          Your credentials are used only to sign into EduPage and aren&apos;t
+          saved anywhere
+        </p>
       </form>
-      <div className={subjects ? "subjects" : "none"}>
+      <div className={subjects && !chosenGrades ? "subjects" : "none"}>
         <h1 className="header">Choose a subject: </h1>
+
         {subjects
           .slice(0, -1)
           .split(",")
@@ -76,6 +108,32 @@ export default function Home() {
               </button>
             );
           })}
+      </div>
+      <div className={chosenGrades ? "calculator" : "none"}>
+        <p>
+          Your current average: <span>{currAverage}</span>
+        </p>
+        <p>
+          Your grades:{" "}
+          <span>{chosenGrades?.toString().replace("", ",").substring(1)}</span>
+        </p>
+        <p>New grade:</p>
+        <input
+          value={newGrade}
+          onChange={(e) => {
+            setNewGrade(e.target.value);
+            calcAverage(e.target.value, newValue);
+          }}
+        />
+        <p>The grade&apos;s value:</p>
+        <input
+          value={newValue}
+          onChange={(e) => {
+            setNewValue(e.target.value);
+            calcAverage(newGrade, e.target.value);
+          }}
+        />
+        <h1>{newAverage}</h1>
       </div>
     </main>
   );
