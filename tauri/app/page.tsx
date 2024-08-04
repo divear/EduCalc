@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 // import logo from "../public/vercel.svg";
 
 export default function Home() {
+  const [error, setError] = useState("");
   const [grades, setGrades] = useState("");
   const [subjects, setSubjects] = useState("");
   const [username, setUsername] = useState("");
@@ -14,11 +15,15 @@ export default function Home() {
   const [newAverage, setNewAverage] = useState<number>();
   const [currAverage, setCurrAverage] = useState<number>();
   const [chosenGrades, setChosenGrades] = useState<number[]>();
+  const [chosenShowGrades, setChosenShowGrades] = useState<number[]>();
   const [chosenValues, setChosenValues] = useState<number[]>();
 
   function signin(e: any) {
     e.preventDefault();
-    console.log(`sign in ${username} ${password}`);
+    if (!username || !password) {
+      setError("You have to fill all fields!");
+      return;
+    }
     invoke<string>("subjects", { username, password })
       .then((result) => {
         console.log(result);
@@ -31,19 +36,24 @@ export default function Home() {
   function chooseSubject(chose: string) {
     let parsed = JSON.parse(`[${grades.slice(0, -1)}]`);
     let znamky: Array<number> = [];
+    let showZnamky: Array<number> = [];
     let vahy: Array<number> = [];
+    console.log(parsed);
+
     parsed.forEach((p: Array<string>) => {
       if (chose == p[0]) {
         console.log(p);
-        let newZnamka = parseInt(p[1]) * parseInt(p[2]);
+        let newZnamka = parseFloat(p[1]) * parseFloat(p[2]);
         znamky.push(newZnamka);
-        vahy.push(parseInt(p[2]));
+        showZnamky.push(parseFloat(p[1]));
+        vahy.push(parseFloat(p[2]));
         console.log(vahy);
       }
     });
     console.log(vahy);
     setChosenGrades(znamky);
     setChosenValues(vahy);
+    setChosenShowGrades(showZnamky);
     let prumer =
       znamky.reduce((partialSum, a) => partialSum + a, 0) /
       vahy.reduce((partialSum, a) => partialSum + a, 0);
@@ -55,26 +65,35 @@ export default function Home() {
     console.log(chosenGrades);
     console.log(chosenValues);
     if (!chosenValues || !chosenGrades) return;
+    if (!grade || !value) {
+      setNewAverage(currAverage);
+      return;
+    }
+    console.log(grade);
+    console.log(value);
+
     let gradTemp = chosenGrades.toSorted(); // to copy by value
     let valuTemp = chosenValues.toSorted(); // to copy by value
-    gradTemp.push(parseInt(grade) * parseInt(value));
-    valuTemp.push(parseInt(value));
-    console.log(gradTemp);
-    console.log(valuTemp);
+    gradTemp.push(parseFloat(grade) * parseFloat(value));
+    valuTemp.push(parseFloat(value));
 
     let prumer =
       gradTemp.reduce((partialSum, a) => partialSum + a, 0) /
       valuTemp.reduce((partialSum, a) => partialSum + a, 0);
-    console.log(prumer);
 
     setNewAverage(prumer);
   }
 
   return (
     <main className="content">
+      <div className={error ? "error" : "none"}>
+        <h1>{error}</h1>
+      </div>
       <form
         className={grades || subjects ? "none" : "signin"}
-        onSubmit={(e) => signin(e)}
+        onSubmit={(e) => {
+          signin(e);
+        }}
       >
         <label>Username</label>
         <br />
@@ -110,22 +129,41 @@ export default function Home() {
           })}
       </div>
       <div className={chosenGrades ? "calculator" : "none"}>
+        <button
+          className="backButton"
+          onClick={() => {
+            setChosenGrades(undefined);
+            setNewAverage(undefined);
+            setNewGrade("");
+            setNewValue("");
+          }}
+        >
+          🔙
+        </button>
         <p>
-          Your current average: <span>{currAverage}</span>
+          Your current average:{" "}
+          <span className="currentAverage">{currAverage}</span>
         </p>
         <p>
           Your grades:{" "}
-          <span>{chosenGrades?.toString().replace("", ",").substring(1)}</span>
+          <span>
+            {chosenShowGrades?.toString().replace("", ", ").substring(1)}
+          </span>
+        </p>
+        <p>
+          Their weights:{" "}
+          <span>{chosenValues?.toString().replace("", ", ").substring(1)}</span>
         </p>
         <p>New grade:</p>
         <input
+          autoFocus={true}
           value={newGrade}
           onChange={(e) => {
             setNewGrade(e.target.value);
             calcAverage(e.target.value, newValue);
           }}
         />
-        <p>The grade&apos;s value:</p>
+        <p>The grade&apos;s weight:</p>
         <input
           value={newValue}
           onChange={(e) => {
@@ -133,7 +171,10 @@ export default function Home() {
             calcAverage(newGrade, e.target.value);
           }}
         />
-        <h1>{newAverage}</h1>
+        <h1 className="newAverage">
+          <p className={newAverage ? "" : "none"}>Your new average:</p>
+          {newAverage}
+        </h1>
       </div>
     </main>
   );

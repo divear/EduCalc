@@ -1,15 +1,18 @@
+# tui
 - [x] start checking: if the grade page takes too long, try again
 - [x] add the 15 sec timer; maybe on another thread(?);
 - [x] make it differenciate individual school subjects
 - [x] make it ask you your credentials if there are none found in .env
 - [x] censor the password while typing it in
 
-- [ ] gui
-  - [ ] the grades 
+# gui
+  - [x] the grades 
   - [ ] loading page 
   - [ ] add the option to "save login"
   - [ ] make the password be type="password"
-- [ ] make icons
+  - [ ] make it recognize 0.5 as a weight
+  - [ ] put the grades and value in a <table>
+  - [ ] make icons
 
 
 
