@@ -2,10 +2,7 @@
 
 For some reason edupage doesn't have this built in, so I made this small script to calculate what would happen to your grade average if you received a new grade.
 
-
-
 - Internet connection required
-
 
 ## How do I use this?
 
@@ -22,6 +19,14 @@ PASSWORD=your_password
 ```
 cargo run
 ```
+
+for the GUI
+
+```
+cargo run -- --term
+```
+
+for the TUI
 
 ## How does this work?
 

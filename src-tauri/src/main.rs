@@ -1,13 +1,27 @@
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use colored::Colorize;
-use dotenvy::dotenv;
 use headless_chrome::Browser;
-use std::{collections::HashSet, env, error::Error, io, io::prelude::*, time::Duration};
-
+use std::{collections::HashSet, env, error::Error, fmt, time::Duration};
+mod term;
 const WAIT_LIMIT: u64 = 15;
 struct ZnamkaStruct {
     predmet: String,
     znamka: f32,
     vaha: f32,
+}
+impl fmt::Display for ZnamkaStruct {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        println!(
+            "[\"{}\",\"{}\",\"{}\"]",
+            self.predmet, self.znamka, self.vaha
+        );
+        write!(
+            f,
+            "[\"{}\",\"{}\",\"{}\"]",
+            self.predmet, self.znamka, self.vaha
+        )
+    }
 }
 
 // the individual processing functions
@@ -29,45 +43,26 @@ fn process_percent(znamka: &str) -> Option<f32> {
     let znamka: f32 = znamka.replace("%", "").parse().expect("a proper float");
     Some(znamka)
 }
-fn prompt_and_read(prompt: &str) -> Result<usize, Box<dyn std::error::Error>> {
-    print!("{}", prompt);
-    io::stdout().flush()?;
-    let mut input = String::new();
-    io::stdin().lock().read_line(&mut input)?;
-    Ok(input.trim().parse()?)
-}
-fn prompt_and_read_creds(prompt: &str) -> String {
-    print!("{}", prompt);
-    io::stdout().flush().expect("failed to flush stdout");
-    let mut input = String::new();
-    io::stdin()
-        .lock()
-        .read_line(&mut input)
-        .expect("failed to read line from user");
-    input.trim().to_string()
-}
 
-pub fn main() -> Result<(), Box<dyn Error>> {
-    let browser = Browser::default()?;
-    let tab = browser.new_tab()?;
-
-    let username: String;
-    let password: String;
-    match dotenv() {
-        Ok(..) => {
-            println!(".env found, signing in...");
-            username = env::var("USERNAME").expect("USERNAME environment variable not set");
-            password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
+#[tauri::command]
+fn subjects(username: &str, password: &str) -> (String, String) {
+    match get_subjects(username, password) {
+        Ok((subjects, grades)) => {
+            println!("success");
+            (subjects, grades)
         }
-        Err(..) => {
-            println!(".env not found, sign in manually: ");
-            username = prompt_and_read_creds("Your EduPage username: ").to_string();
-
-            print!("Your EduPage password: ");
-            io::stdout().flush().expect("failed to flush stdout");
-            password = rpassword::read_password().unwrap();
+        Err(err) => {
+            println!("bad data {}", err);
+            (
+                String::from("could not get subjects"),
+                String::from("could not get grades"),
+            )
         }
     }
+}
+fn get_subjects(username: &str, password: &str) -> Result<(String, String), Box<dyn Error>> {
+    let browser = Browser::default()?;
+    let tab = browser.new_tab()?;
 
     loop {
         tab.navigate_to("https://sspbrno.edupage.org/login/edubarLogin.php")?;
@@ -102,7 +97,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             }
         };
     }
-
     let mut everything_vec: Vec<ZnamkaStruct> = vec![];
     let everything = tab.find_elements(".app-list-item-main")?;
 
@@ -190,43 +184,26 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     }
     let mut vec_predmetu = Vec::from_iter(set_existujicich_predmetu);
     vec_predmetu.sort();
-    for (i, p) in vec_predmetu.clone().into_iter().enumerate() {
-        println!("{}) - {}", i, p);
-    }
-    loop {
-        let last_predmet_index = vec_predmetu.len() - 1;
-        let predmet_pick_index =
-            prompt_and_read(&format!("Choose subject [0-{}]: ", last_predmet_index))?;
+    Ok((
+        vec_predmetu
+            .iter()
+            .map(|x| x.to_string() + ",")
+            .collect::<String>(),
+        everything_vec
+            .iter()
+            .map(|x| x.to_string() + ",")
+            .collect::<String>(),
+    ))
+}
 
-        // random order, because HashSet
-        let predmet_pick = &vec_predmetu[predmet_pick_index];
-        println!("\nYou chose: {}", predmet_pick);
-        let mut picked_predmet_znamky: Vec<f32> = vec![];
-        let mut picked_predmet_vahy: Vec<f32> = vec![];
-        for i in &everything_vec {
-            if i.predmet == **predmet_pick {
-                picked_predmet_znamky.push(i.znamka * i.vaha);
-                picked_predmet_vahy.push(i.vaha);
-            }
-        }
-        // println!("{:?}", x);
-        // println!("{:?}", picked_predmet_vahy);
-        // println!("{:?}", picked_predmet_znamky);
-        println!(
-            "Your current average: {}",
-            picked_predmet_znamky.clone().into_iter().sum::<f32>()
-                / picked_predmet_vahy.clone().into_iter().sum::<f32>()
-        );
-        let nova_znamka: f32 = prompt_and_read("Add new grade: ")? as f32;
-        let nova_vaha: f32 = prompt_and_read("The grade's weight: ")? as f32;
-        println!("New grade: {}, Weight: {}", nova_znamka, nova_vaha);
-        picked_predmet_znamky.push(nova_znamka * nova_vaha);
-        picked_predmet_vahy.push(nova_vaha);
-        println!(
-            "Your new calculated average: {}\n",
-            picked_predmet_znamky.clone().into_iter().sum::<f32>()
-                / picked_predmet_vahy.clone().into_iter().sum::<f32>()
-        );
+pub fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.contains(&"--term".to_string()) {
+        let _ = term::term();
+    } else {
+        tauri::Builder::default()
+            .invoke_handler(tauri::generate_handler![subjects])
+            .run(tauri::generate_context!())
+            .expect("error while running tauri application");
     }
-    // Ok(())
 }
