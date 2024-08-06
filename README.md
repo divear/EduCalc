@@ -17,13 +17,13 @@ PASSWORD=your_password
 2. Run it with:
 
 ```
-cargo run
+cargo tauri dev
 ```
 
 for the GUI
 
 ```
-cargo run -- --term
+cargo tauri dev -- --term
 ```
 
 for the TUI

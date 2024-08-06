@@ -118,7 +118,7 @@ pub fn term() -> Result<(), Box<dyn Error>> {
 
         let created_znamka = match new_znamka.parse::<f32>() {
             Ok(znamka_int) => {
-                println!("Parsed grade: {}", znamka_int.to_string().green());
+                println!("\rParsed grade: {}", znamka_int.to_string().green());
                 Ok(znamka_int)
             }
             Err(_) => {
