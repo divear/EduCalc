@@ -17,6 +17,8 @@ PASSWORD=your_password
 2. Run it with:
 
 ```
+cd src-tauri
+
 cargo tauri dev
 ```
 
