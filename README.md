@@ -1,39 +1,56 @@
-# EduPage grade average calculator
+# EduPage Grade Average Calculator
 
-For some reason edupage doesn't have this built in, so I made this small script to calculate what would happen to your grade average if you received a new grade.
+This script calculates your grade average on EduPage, factoring in a new grade. Since EduPage doesn't have this feature, this tool scrapes the site to do it.
 
-- Internet connection required
+## Usage
 
-## How do I use this?
+### Option 1: From Source
 
-1. Clone this repo, create a `.env` file in root directory and add your EduPage credentials:
+1. Clone the repository and create a `.env` file in the root directory with your EduPage credentials:
 
-```env
-USERNAME=your_username
-PASSWORD=your_password
+   ```env
+   USERNAME=your_username
+   PASSWORD=your_password
+   ```
 
-```
+2. Run the script:
 
-2. Run it with:
+   - For the GUI:
 
-```
-cd src-tauri
+     ```bash
+     cd src-tauri
+     cargo tauri dev
+     ```
 
-cargo tauri dev
-```
+   - For the TUI:
+     ```bash
+     cd src-tauri
+     cargo tauri dev -- --term
+     ```
 
-for the GUI
+### Option 2: From a Binary
 
-```
-cargo tauri dev -- --term
-```
+1. Run the binary:
 
-for the TUI
+   - For the GUI:
 
-## How does this work?
+     ```bash
+     ./edupage-average-calculator
+     ```
 
-It just scrapes the site and calculates it.
+   - For the TUI:
+     ```bash
+     ./edupage-average-calculator --term
+     ```
 
-## Known issues
+## How It Works
 
-- Edupage is unreliable and sometimes the results simply can't be scraped
+The script scrapes EduPage and calculates your grade average based on your current and new grades.
+
+## Known Issues
+
+- EduPage can be unreliable, and scraping might fail at times.
+
+---
+
+This version is shorter and easier to follow while keeping all the essential details.
