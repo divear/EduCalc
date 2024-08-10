@@ -45,12 +45,8 @@ This script calculates your grade average on EduPage, factoring in a new grade. 
 
 ## How It Works
 
-The script scrapes EduPage and calculates your grade average based on your current and new grades.
+The script scrapes EduPage and calculates your grade average based on your current grades and the new one.
 
 ## Known Issues
 
 - EduPage can be unreliable, and scraping might fail at times.
-
----
-
-This version is shorter and easier to follow while keeping all the essential details.
