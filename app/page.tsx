@@ -17,6 +17,7 @@ export default function Home() {
   const [chosenGrades, setChosenGrades] = useState<number[]>();
   const [chosenShowGrades, setChosenShowGrades] = useState<number[]>();
   const [chosenValues, setChosenValues] = useState<number[]>();
+  const [showPass, setShowPass] = useState(false);
 
   function signin(e: any) {
     e.preventDefault();
@@ -95,17 +96,26 @@ export default function Home() {
           signin(e);
         }}
       >
-        <label>Username</label>
+        <h1>Username</h1>
         <br />
         <input value={username} onChange={(e) => setUsername(e.target.value)} />
         <br />
-        <label>Password</label>
+        <h1>Password</h1>
         <br />
         <input
-          type="password"
+          type={showPass ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <br />
+        <label>
+          <input
+            id="showPass"
+            type="checkbox"
+            onChange={() => setShowPass(!showPass)}
+          ></input>
+          Show password
+        </label>
 
         <br />
         <button className="signButton">Sign in</button>
