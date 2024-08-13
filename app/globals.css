@@ -8,6 +8,13 @@ body {
   height: 100%;
   overflow: hidden;
 }
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background: black;
+    color: white;
+  }
+}
 
 @layer utilities {
   .text-balance {

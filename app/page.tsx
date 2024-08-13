@@ -1,8 +1,8 @@
 "use client";
 // import Image from "next/image";
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 // import logo from "../public/vercel.svg";
+import { useState } from "react";
 
 export default function Home() {
   const [error, setError] = useState("");
@@ -28,6 +28,10 @@ export default function Home() {
     invoke<string>("subjects", { username, password })
       .then((result) => {
         console.log(result);
+        if (result[0] == "could not get subjects") {
+          setError("Could not get subjects.");
+          return;
+        }
         setSubjects(result[0]);
         setGrades(result[1]);
         console.log(result[1]);
