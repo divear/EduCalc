@@ -9,13 +9,13 @@
   - [x] the grades 
   - [ ] loading page 
   - [ ] add the option to "save login"
-  - [ ] add the option to "show password"
-  - [ ] make the password be type="password"
+  - [x] add the option to "show password"
+  - [x] make the password be type="password"
   - [x] make it recognize 0.5 as a weight
   - [ ] put the grades and value in a <table>
-  - [ ] make icons
+  - [x] make icons
 
 
-- [ ] make both availible with --tui option
+- [x] make both availible with --tui option
 
 - [ ] write a blog about this 

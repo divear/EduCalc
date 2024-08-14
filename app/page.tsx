@@ -106,21 +106,20 @@ export default function Home() {
         <br />
         <h1>Password</h1>
         <br />
-        <input
-          type={showPass ? "text" : "password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <br />
-        <label>
+        <div className="pass">
           <input
+            type={showPass ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
             id="showPass"
-            type="checkbox"
-            onChange={() => setShowPass(!showPass)}
-          ></input>
-          Show password
-        </label>
-
+            type="button"
+            onClick={() => setShowPass(!showPass)}
+          >
+            {showPass ? "👁" : "🔒"}
+          </button>
+        </div>
         <br />
         <button className="signButton">Sign in</button>
         <p className="text-sm m-5">
