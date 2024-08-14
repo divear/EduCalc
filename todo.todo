@@ -9,6 +9,7 @@
   - [x] the grades 
   - [ ] loading page 
   - [ ] add the option to "save login"
+    - [ ] sign off button
   - [x] add the option to "show password"
   - [x] make the password be type="password"
   - [x] make it recognize 0.5 as a weight

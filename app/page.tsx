@@ -90,7 +90,7 @@ export default function Home() {
   }
 
   return (
-    <main className="content">
+    <main onClick={() => setError("")} className="content">
       <div className={error ? "error" : "none"}>
         <h1>{error}</h1>
       </div>
@@ -120,8 +120,14 @@ export default function Home() {
             {showPass ? "👁" : "🔒"}
           </button>
         </div>
+        <label>
+          <input type="checkbox"></input>
+          Save login for later
+        </label>
         <br />
         <button className="signButton">Sign in</button>
+
+        <br />
         <p className="text-sm m-5">
           Your credentials are used only to sign into EduPage and aren&apos;t
           saved anywhere
