@@ -1,14 +1,14 @@
 [package]
-name = "edupage_grade_calculator"
+name = "EduCalc"
 version = "0.1.0"
 edition = "2021"
 authors = ["divear <divear.cz@gmail.com>"]
 license = "GPL3"
 description = "A script to calculate your EduPage average grade"
 readme = "README.md"
-homepage = "https://github.com/divear/edupage-prumer-calculator"
-repository = "https://github.com/divear/edupage-prumer-calculator"
-keywords = ["cli", "EduPage", "grade"]
+homepage = "https://github.com/divear/EduCalc"
+repository = "https://github.com/divear/EduCalc"
+keywords = ["cli", "EduPage", "grade", "EduCalc"]
 categories = ["command-line-utilities"]
 rust-version = "1.60"
 

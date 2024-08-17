@@ -6,7 +6,7 @@
     "distDir": "../out"
   },
   "package": {
-    "productName": "edupage-average-calculator",
+    "productName": "EduCalc",
     "version": "0.1.1"
   },
   "tauri": {
@@ -28,7 +28,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.edupage-average-calculator.dev",
+      "identifier": "com.educalc.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -57,7 +57,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "Edupage average calculator",
+        "title": "EduCalc - Edupage average calculator",
         "width": 800
       }
     ]
