@@ -196,6 +196,7 @@ export default function Home() {
         </p>
         <p>New grade:</p>
         <input
+          placeholder="-"
           autoFocus={true}
           value={newGrade}
           onChange={(e) => {
@@ -205,6 +206,7 @@ export default function Home() {
         />
         <p>The grade&apos;s weight:</p>
         <input
+          placeholder="0"
           value={newValue}
           onChange={(e) => {
             setNewValue(e.target.value);
