@@ -56,8 +56,10 @@ pub fn term() -> Result<(), Box<dyn Error>> {
     match dotenv() {
         Ok(..) => {
             println!(".env found, signing in...");
-            username = env::var("USERNAME").expect("USERNAME environment variable not set");
-            password = env::var("PASSWORD").expect("PASSWORD environment variable not set");
+            username =
+                env::var("NEXT_PUBLIC_USERNAME").expect("USERNAME environment variable not set");
+            password =
+                env::var("NEXT_PUBLIC_PASSWORD").expect("PASSWORD environment variable not set");
         }
         Err(..) => {
             println!(".env not found, sign in manually: ");

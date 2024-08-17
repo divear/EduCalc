@@ -2,7 +2,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use colored::Colorize;
 use headless_chrome::Browser;
-use std::{collections::HashSet, env, error::Error, fmt, time::Duration};
+use std::{
+    collections::HashSet, env, error::Error, fmt, fs, fs::File, io::prelude::*, time::Duration,
+};
+
 mod term;
 const WAIT_LIMIT: u64 = 15;
 struct ZnamkaStruct {
@@ -45,8 +48,8 @@ fn process_percent(znamka: &str) -> Option<f32> {
 }
 
 #[tauri::command]
-fn subjects(username: &str, password: &str) -> (String, String) {
-    match get_subjects(username, password) {
+fn subjects(username: &str, password: &str, is_save: bool) -> (String, String) {
+    match get_subjects(username, password, is_save) {
         Ok((subjects, grades)) => {
             println!("success");
             (subjects, grades)
@@ -60,9 +63,26 @@ fn subjects(username: &str, password: &str) -> (String, String) {
         }
     }
 }
-fn get_subjects(username: &str, password: &str) -> Result<(String, String), Box<dyn Error>> {
+fn get_subjects(
+    username: &str,
+    password: &str,
+    is_save: bool,
+) -> Result<(String, String), Box<dyn Error>> {
     let browser = Browser::default()?;
     let tab = browser.new_tab()?;
+
+    if is_save {
+        let mut file = File::create("../.env")?;
+        file.write_all(
+            format!("NEXT_PUBLIC_USERNAME={username}\nNEXT_PUBLIC_PASSWORD={password}\n")
+                .as_bytes(),
+        )
+        .expect("not written");
+        println!("created .env");
+    } else {
+        fs::remove_file("../.env")?;
+        println!("deleted .env");
+    }
 
     loop {
         tab.navigate_to("https://sspbrno.edupage.org/login/edubarLogin.php")?;

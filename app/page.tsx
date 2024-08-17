@@ -2,7 +2,7 @@
 // import Image from "next/image";
 import { invoke } from "@tauri-apps/api/tauri";
 // import logo from "../public/vercel.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [error, setError] = useState("");
@@ -18,6 +18,16 @@ export default function Home() {
   const [chosenShowGrades, setChosenShowGrades] = useState<number[]>();
   const [chosenValues, setChosenValues] = useState<number[]>();
   const [showPass, setShowPass] = useState(false);
+  const [isSave, setIsSave] = useState(false);
+
+  console.log();
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USERNAME && process.env.NEXT_PUBLIC_PASSWORD) {
+      setUsername(process.env.NEXT_PUBLIC_USERNAME);
+      setPassword(process.env.NEXT_PUBLIC_PASSWORD);
+      setIsSave(true);
+    }
+  }, []);
 
   function signin(e: any) {
     e.preventDefault();
@@ -25,7 +35,7 @@ export default function Home() {
       setError("You have to fill all fields!");
       return;
     }
-    invoke<string>("subjects", { username, password })
+    invoke<string>("subjects", { username, password, isSave })
       .then((result) => {
         console.log(result);
         if (result[0] == "could not get subjects") {
@@ -120,10 +130,17 @@ export default function Home() {
             {showPass ? "👁" : "🔒"}
           </button>
         </div>
-        <label>
-          <input type="checkbox"></input>
+
+        <label className="custom-checkbox">
+          <input
+            checked={isSave}
+            onClick={() => setIsSave(!isSave)}
+            type="checkbox"
+          />
+          <span className="checkmark"></span>
           Save login for later
         </label>
+
         <br />
         <button className="signButton">Sign in</button>
 

@@ -9,6 +9,7 @@
   - [x] the grades 
   - [ ] loading page 
   - [ ] add the option to "save login"
+    - [ ] make the checkbox visible
     - [ ] sign off button
   - [x] add the option to "show password"
   - [x] make the password be type="password"
