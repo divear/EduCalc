@@ -2,6 +2,8 @@
 
 This script calculates your grade average on EduPage, factoring in a new grade. Since EduPage doesn't have this feature, this tool scrapes the site to do it.
 
+![EduCalc screenshot](https://firebasestorage.googleapis.com/v0/b/personalsite-f2369.appspot.com/o/img%2Feducalc3.png?alt=media)
+
 ## Usage
 
 ### Option 1: From Source
@@ -49,4 +51,4 @@ The script scrapes EduPage and calculates your grade average based on your curre
 
 ## Known Issues
 
-- EduPage can be unreliable, and scraping might fail at times.
+- EduPage can be unreliable, and scraping in the TUI version might fail at times.
