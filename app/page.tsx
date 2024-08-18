@@ -134,7 +134,7 @@ export default function Home() {
         <label className="custom-checkbox">
           <input
             checked={isSave}
-            onClick={() => setIsSave(!isSave)}
+            onChange={() => setIsSave(!isSave)}
             type="checkbox"
           />
           <span className="checkmark"></span>
@@ -185,18 +185,20 @@ export default function Home() {
           <span className="currentAverage">{currAverage}</span>
         </p>
         <table>
-          <tr>
-            <td>Your grades: </td>
-            {chosenShowGrades?.map((e, i) => {
-              return <td key={i}>{e}</td>;
-            })}
-          </tr>
-          <tr>
-            <td>Their weights: </td>
-            {chosenValues?.map((e, i) => {
-              return <td key={i}>{e}</td>;
-            })}
-          </tr>
+          <tbody>
+            <tr>
+              <td key={0}>Your grades: </td>
+              {chosenShowGrades?.map((e, i) => {
+                return <td key={i}>{e}</td>;
+              })}
+            </tr>
+            <tr>
+              <td key={0}>Their weights: </td>
+              {chosenValues?.map((e, i) => {
+                return <td key={i}>{e}</td>;
+              })}
+            </tr>
+          </tbody>
         </table>
         <p>New grade:</p>
         <input
