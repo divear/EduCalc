@@ -184,16 +184,20 @@ export default function Home() {
           Your current average:{" "}
           <span className="currentAverage">{currAverage}</span>
         </p>
-        <p>
-          Your grades:{" "}
-          <span>
-            {chosenShowGrades?.toString().replace("", ", ").substring(1)}
-          </span>
-        </p>
-        <p>
-          Their weights:{" "}
-          <span>{chosenValues?.toString().replace("", ", ").substring(1)}</span>
-        </p>
+        <table>
+          <tr>
+            <td>Your grades: </td>
+            {chosenShowGrades?.map((e, i) => {
+              return <td key={i}>{e}</td>;
+            })}
+          </tr>
+          <tr>
+            <td>Their weights: </td>
+            {chosenValues?.map((e, i) => {
+              return <td key={i}>{e}</td>;
+            })}
+          </tr>
+        </table>
         <p>New grade:</p>
         <input
           placeholder="-"

@@ -25,6 +25,15 @@ body {
   }
 }
 
+td:hover {
+  background: #001233;
+}
+td {
+  background: #101047;
+  border: 1px white solid;
+  text-align: center;
+  padding: 0.6vw;
+}
 .none {
   display: none;
 }
