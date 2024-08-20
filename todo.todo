@@ -8,10 +8,8 @@
 # gui
   - [x] the grades 
   - [ ] loading page 
-  - [ ] pass the grade in the js array as a number, not string
-  - [ ] add the option to "save login"
-    - [ ] make the checkbox visible
-    - [ ] sign off button
+  - [x] add the option to "save login"
+    - [x] make the checkbox visible
   - [x] add the option to "show password"
   - [x] make the password be type="password"
   - [x] make it recognize 0.5 as a weight
@@ -20,5 +18,7 @@
 
 
 - [x] make both availible with --tui option
+- [x] write a blog about this 
 
-- [ ] write a blog about this 
+- [ ] upload to crates.io
+
