@@ -23,7 +23,7 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.7.0", features = [] }
 
 dotenvy = "0.15.7"  
-headless_chrome = "1.0.13"
+headless_chrome = "1.0.0"
 colored="2.1.0"
 rpassword = "7.3"
 
