@@ -9,7 +9,7 @@ readme = "README.md"
 homepage = "https://github.com/divear/EduCalc"
 repository = "https://github.com/divear/EduCalc"
 keywords = ["cli", "EduPage", "grade", "EduCalc"]
-categories = ["command-line-utilities"]
+categories = ["command-line-utilities", "grade-calculator"]
 rust-version = "1.60"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -23,7 +23,7 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.7.0", features = [] }
 
 dotenvy = "0.15.7"  
-headless_chrome = {git = "https://github.com/rust-headless-chrome/rust-headless-chrome", features = ["fetch"] }
+headless_chrome = "1.0.13"
 colored="2.1.0"
 rpassword = "7.3"
 
